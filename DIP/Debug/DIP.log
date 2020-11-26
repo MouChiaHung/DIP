@@ -1,0 +1,23 @@
+﻿  dft.cpp
+  The contents of <filesystem> are available only with C++17 or later.
+C:\src\amo\DIP\DIP\dft.cpp(57,61): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(60,45): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(102,41): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(105,33): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(160,35): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(163,33): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+  main.cpp
+  The contents of <filesystem> are available only with C++17 or later.
+  tiff.cpp
+  The contents of <filesystem> are available only with C++17 or later.
+C:\src\amo\DIP\DIP\tiff.cpp(810,43): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(845,44): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(855,32): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(887,29): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(899,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(911,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+  Generating Code...
+C:\src\amo\DIP\DIP\tiff.cpp(601): warning C4715: 'Tiff::bit_plane_reconstruct': not all control paths return a value
+C:\src\amo\DIP\DIP\main.cpp(346): warning C4715: 'print_bit_plane': not all control paths return a value
+C:\src\amo\DIP\DIP\dft.cpp(240): warning C4715: 'DFT::fftshift': not all control paths return a value
+  DIP.vcxproj -> C:\src\amo\DIP\Debug\DIP.exe
