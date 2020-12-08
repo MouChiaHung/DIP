@@ -1,10 +1,22 @@
 %Digital image processing
 close all;
+%{
 row=400;  col=480;
 file_raw = 'tif.raw';
 fin=fopen(file_raw,'r');
 I=fread(fin,row*col,'uint8=>uint8'); 
 Z=reshape(I,row,col);
+%}
+
+%
+row=376;  col=240;
+file_raw = 'pgm.raw';
+fin=fopen(file_raw,'r');
+I=fread(fin,row*col,'uint8=>uint8');
+Z=uint8(I);
+Z=reshape(I,row,col);
+%
+
 Z=Z';
 fclose(fin);
 figure('Name',file_raw,'NumberTitle','off');
@@ -21,7 +33,7 @@ B5=bitset(B,5,bitget(I,5));
 B6=bitset(B,6,bitget(I,6));
 B7=bitset(B,7,bitget(I,7));
 B8=bitset(B,8,bitget(I,8));
-B = B1+B2+B3+B4+B5+B6+B7+B8;
+B=B1+B2+B3+B4+B5+B6+B7+B8;
 B=uint8(B);
 Br=reshape(B,row,col);
 Br=Br';

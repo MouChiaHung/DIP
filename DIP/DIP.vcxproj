@@ -150,10 +150,12 @@
   <ItemGroup>
     <ClCompile Include="dft.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="pgm.cpp" />
     <ClCompile Include="tiff.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dft.h" />
+    <ClInclude Include="pgm.h" />
     <ClInclude Include="tiff.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

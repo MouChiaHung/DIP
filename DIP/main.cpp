@@ -12,6 +12,7 @@
 #include "tiff.h"
 #include "dft.h"
 #include <time.h>  
+#include "pgm.h"
 
 using namespace std;
 	/******************************************************************************
@@ -366,7 +367,7 @@ int main()
 	uint16_t tmp2[9];
 	for (int i=0; i<9; i++) tmp2[i] = tmp[i];
 	byte_swap_uint8_data(tmp2, 9);
-#endif
+
 	//uint64_t d1 = 0x12345678;
 	double d1 = -10.5;
 	uint8_t* pc = (uint8_t*)&d1;
@@ -376,11 +377,8 @@ int main()
 	for (int i=0; i<sizeof(d1); i++)
 		printf("[%x]", *(pc+i));
 	printf("\n");
-
-	return 0;
 #endif
-
-#if 0 //DFT test
+#if 1 //DFT test
 	DFT dft;
 	int width = 4;
 	int height = 3;
@@ -393,9 +391,49 @@ int main()
 	dft.spectrum(spec, &w, &h, true);
 	dft.fftshift(spec, (int)w, (int)h);
 	dft.idft2(image, &w, &h);
+
+	double* dst = NULL;
+	double src_1[3*2] = {1,2,3,4,5,6};
+	double kernel_1[2*2] = {1,1,1,1};
+	dft.convolutionPadding(dst, src_1, kernel_1, 3, 2, 2);
+	double src[3*3] = {1,2,3,4,5,6,7,8,9};
+	double kernel[3*3] = {-1,-2,-1,0,0,0,1,2,1};
+	dft.convolution(dst, src, kernel, 3, 3, 3);
+
 	return 0;
 #endif
 
+
+	return 0;
+#endif
+
+#if 1 //pgm test
+	uint8_t* data_pgm = NULL;
+	int size_pgm = 0;
+	PGM pgm;
+	pgm.read("C:\\src\\amo\\DIP\\Debug\\fingerE.pgm", data_pgm, &size_pgm);
+
+#if 0
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	printf("dft_idft() start time:%s", asctime(timeinfo) );
+	pgm.dft_idft(80, 180);
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	printf("dft_idft() end   time:%s", asctime(timeinfo) );
+#endif
+
+#if 0
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	printf("low_pass_eff() start time:%s", asctime(timeinfo) );
+	pgm.low_pass_eff(80, 180, 40);
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	printf("low_pass_eff() end   time:%s", asctime(timeinfo) );
+	return 0;
+#endif
+#else //tiff test
 	//ostream& (*pf)(ostream&) = Foo; 
 	//cout << pf;
 
@@ -406,7 +444,25 @@ int main()
 	t.read_type2("C:\\src\\amo\\DIP\\Debug\\finger.tif", data, &size);
 	
 #if 1 //current topics	
-	t.dft_idft(200, 200);
+	//t.dft_idft(100, 100);
+
+#if 0
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	printf("low_pass() start time:%s", asctime(timeinfo) );
+	t.low_pass(100,100, 20);
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	printf("low_pass() end   time:%s", asctime(timeinfo) );
+#endif	
+
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	printf("low_pass_eff() start time:%s", asctime(timeinfo) );
+	t.low_pass_eff(250, 250, 50);
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	printf("low_pass_eff() end   time:%s", asctime(timeinfo) );
 #endif
 
 #if 0 //previous topics
@@ -443,6 +499,7 @@ int main()
 	if (planes) delete[] planes;
 	if (ht_dots) delete[] ht_dots;
 	if (bufFloydSteinbergDithering) delete[] bufFloydSteinbergDithering;
+#endif
 #endif
 	//pf = Qoo;
 	//cout << pf;

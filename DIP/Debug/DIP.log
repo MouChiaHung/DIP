@@ -2,22 +2,46 @@
   The contents of <filesystem> are available only with C++17 or later.
 C:\src\amo\DIP\DIP\dft.cpp(57,61): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
 C:\src\amo\DIP\DIP\dft.cpp(60,45): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
-C:\src\amo\DIP\DIP\dft.cpp(102,41): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
-C:\src\amo\DIP\DIP\dft.cpp(105,33): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
-C:\src\amo\DIP\DIP\dft.cpp(160,35): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
-C:\src\amo\DIP\DIP\dft.cpp(163,33): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(106,61): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(109,45): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(155,41): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(158,33): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(213,41): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(216,33): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(281,35): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(284,33): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
   main.cpp
   The contents of <filesystem> are available only with C++17 or later.
+  pgm.cpp
+  The contents of <filesystem> are available only with C++17 or later.
+C:\src\amo\DIP\DIP\pgm.cpp(202,43): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(232,44): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(242,32): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(274,29): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(286,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(298,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(367,43): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(399,32): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(442,29): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(454,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
   tiff.cpp
   The contents of <filesystem> are available only with C++17 or later.
-C:\src\amo\DIP\DIP\tiff.cpp(810,43): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
-C:\src\amo\DIP\DIP\tiff.cpp(845,44): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
-C:\src\amo\DIP\DIP\tiff.cpp(855,32): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
-C:\src\amo\DIP\DIP\tiff.cpp(887,29): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
-C:\src\amo\DIP\DIP\tiff.cpp(899,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
-C:\src\amo\DIP\DIP\tiff.cpp(911,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(814,43): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(844,44): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(854,32): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(886,29): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(898,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(910,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(980,43): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1022,32): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1054,29): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1066,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1134,43): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1166,32): warning C4244: 'initializing': conversion from 'double' to 'unsigned int', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1198,29): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1210,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
   Generating Code...
 C:\src\amo\DIP\DIP\tiff.cpp(601): warning C4715: 'Tiff::bit_plane_reconstruct': not all control paths return a value
-C:\src\amo\DIP\DIP\main.cpp(346): warning C4715: 'print_bit_plane': not all control paths return a value
-C:\src\amo\DIP\DIP\dft.cpp(240): warning C4715: 'DFT::fftshift': not all control paths return a value
+C:\src\amo\DIP\DIP\main.cpp(347): warning C4715: 'print_bit_plane': not all control paths return a value
+C:\src\amo\DIP\DIP\dft.cpp(363): warning C4715: 'DFT::fftshift': not all control paths return a value
   DIP.vcxproj -> C:\src\amo\DIP\Debug\DIP.exe

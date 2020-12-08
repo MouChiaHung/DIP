@@ -794,8 +794,12 @@ bool Tiff::dft_idft(int m_, int n_) {
 	for (int j=0; j<m_; j++) {
 		for (int i=0; i<n_; i++) {
 			printf("[");
-			//if (im[i+j*image.width] < 100) printf(" ");
-			//if (im[i+j*image.width] < 10) printf(" ");
+			if (im[i+j*n_] < (uint8_t)100) {
+				printf(" ");
+			}
+			if (im[i+j*n_] < (uint8_t)10) {
+				printf(" ");
+			}
 			printf("%d]", im[i+j*n_]);
 		}
 		printf("\n");
@@ -822,20 +826,15 @@ bool Tiff::dft_idft(int m_, int n_) {
 	double h;
 	dft.spectrum(spec, &w, &h, false);
 	//dft.fftshift(spec, w, h);
-	/*
-	for (int v=0; v<(int)h; v++) {
-		for (int u=0; u<(int)w; u++) {
-			spec[u+v*(int)n] *= w*h;
-		}
-	}
-	*/
 #ifdef PRINT_DFT_IDFT //print
 	for (int v=0; v<(int)h; v++) {
 		for (int u=0; u<(int)w; u++) {
 			printf("[");
+			if (spec[u+v*(int)n] < 10000) printf(" ");
+			if (spec[u+v*(int)n] < 1000) printf(" ");
 			if (spec[u+v*(int)n] < 100) printf(" ");
 			if (spec[u+v*(int)n] < 10) printf(" ");
-			printf("%.lf]", spec[u+v*(int)n]);
+			printf("%.1f]", spec[u+v*(int)n]);
 		}
 		printf("\n");
 	}
@@ -866,8 +865,8 @@ bool Tiff::dft_idft(int m_, int n_) {
 	for (int j=0; j<m_; j++) {
 		for (int i=0; i<n_; i++) {
 			printf("[");
-			//if (output[i+j*n_] < 100) printf(" ");
-			//if (output[i+j*n_] < 10) printf(" ");
+			if (output[i+j*n_] < 100) printf(" ");
+			if (output[i+j*n_] < 10) printf(" ");
 			printf("%d]", output[i+j*n_]);
 		}
 		printf("\n");
@@ -931,7 +930,302 @@ bool Tiff::dft_idft(int m_, int n_) {
 	return true;
 }
 
+bool Tiff::low_pass(int m_, int n_, int window) {
+	printf("LOW PASS...\n");
+	if (de == NULL)		return false;
+	if (raw == NULL)	return false;
+	if (size_raw <= 0)	return false;
+	if (m_*n_ > size_raw) return false;
+	if (window > m_ || window > n_) return false;
 
+	uint8_t* im = new uint8_t[m_*n_];
+	if (im == NULL)
+		return false;
+	memset(im, 0, m_*n_);
+	int k = 0;
 
+	for (int j=(image.height/2-m_/2); j<(image.height/2+m_/2); j++) {
+		for (int i=(image.width/2-n_/2); i<(image.width/2+n_/2); i++) {
+			if (im+k) {
+				*(im+k) = raw[(i+j*image.width)];
+				k++;
+			}
+			else 
+				return false;
+		}
+	}
+
+#ifdef PRINT_DFT_IDFT
+	printf("--- im ---\n");
+	for (int j=0; j<m_; j++) {
+		for (int i=0; i<n_; i++) {
+			printf("[");
+			if (im[i+j*n_] < (uint8_t)100) {
+				printf(" ");
+			}
+			if (im[i+j*n_] < (uint8_t)10) {
+				printf(" ");
+			}
+			printf("%d]", im[i+j*n_]);
+		}
+		printf("\n");
+	}
+#endif
+	double m = m_;
+	double n = n_;
+	double l = m*n;
+	DFT dft;
+	if (m*n != l) 
+		return false;
+	double* img = new double[sizeof(double)*m*n];
+	if (img == NULL) 
+		return false;
+	for (int i=0; i<l; i++) {
+		img[i] = (double)im[i];
+	}
+	printf("DFT...\n");
+	dft.dft2(img, m, n);
+
+	//low pass - clear if out of window
+	printf("Filtering...\n");
+	for (double v=0; v<m; v++) {
+		for (double u=0; u<n; u++) {
+			if ((u<window && v<window) || (u<window && v>(m-1)-window)) continue;
+			else if ((u>(n-1)-window && v<window) || (u>(n-1)-window && v>(m-1)-window)) continue;
+			dft.matrix[(int)u+(int)v*(int)m] = 0x0;
+		}
+	}
+
+	printf("SPCTRUM...\n");
+	double* spec = NULL;
+	double w;
+	double h;
+	dft.spectrum(spec, &w, &h, false);
+	//dft.fftshift(spec, w, h);
+#ifdef PRINT_DFT_IDFT //print
+	for (int v=0; v<(int)h; v++) {
+		for (int u=0; u<(int)w; u++) {
+			printf("[");
+			if (spec[u+v*(int)n] < 10000) printf(" ");
+			if (spec[u+v*(int)n] < 1000) printf(" ");
+			if (spec[u+v*(int)n] < 100) printf(" ");
+			if (spec[u+v*(int)n] < 10) printf(" ");
+			printf("%.1f]", spec[u+v*(int)n]);
+		}
+		printf("\n");
+	}
+#endif
+
+	printf("IDFT...\n");
+	double *output_idft = NULL;
+	dft.idft2(output_idft, &w, &h);
+	uint8_t* output = new uint8_t[l];
+	if (output == NULL || output_idft == NULL)
+		return false;
+	for (int i=0; i<l; i++) {
+		if (output+i != NULL) {
+			output[i] = (uint8_t)((output_idft[i]));
+		}
+	}
+
+#ifdef PRINT_DFT_IDFT
+	printf("--- output ---\n");
+	for (int j=0; j<m_; j++) {
+		for (int i=0; i<n_; i++) {
+			printf("[");
+			if (output[i+j*n_] < 100) printf(" ");
+			if (output[i+j*n_] < 10) printf(" ");
+			printf("%d]", output[i+j*n_]);
+		}
+		printf("\n");
+	}
+#endif
+
+	ofstream fos;
+	try {
+		string file_name = "C:\\src\\amo\\DIP\\Debug\\iftLP.raw";
+		remove(file_name.c_str());
+		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+		if (fos.fail()) {
+			printf("%s\n", strerror(errno));
+			return false;
+		}
+		else fos.clear();
+		fos.write((char*)output, l*sizeof(uint8_t));
+		fos.close();
+	
+		file_name = "C:\\src\\amo\\DIP\\Debug\\specLP.raw";
+		remove(file_name.c_str());
+		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+		if (fos.fail()) {
+			printf("%s\n", strerror(errno));
+			return false;
+		}
+		else fos.clear();
+		if (spec)
+			fos.write((char*)spec, l*sizeof(double));
+		fos.close();
+	}
+	catch (exception ex) {
+		return false;
+	}
+
+	if (im)
+		delete[] im;
+	if (img)
+		delete[] img;
+	if (output)
+		delete[] output;
+	if (output_idft)
+		delete[] output_idft;
+	if (spec)
+		delete[] spec;
+
+	return true;
+}
+
+bool Tiff::low_pass_eff(int m_, int n_, int window) {
+	printf("LOW PASS...\n");
+	if (de == NULL)		return false;
+	if (raw == NULL)	return false;
+	if (size_raw <= 0)	return false;
+	if (m_*n_ > size_raw) return false;
+	if (window > m_ || window > n_) return false;
+
+	uint8_t* im = new uint8_t[m_*n_];
+	if (im == NULL)
+		return false;
+	memset(im, 0, m_*n_);
+	int k = 0;
+
+	for (int j=(image.height/2-m_/2); j<(image.height/2+m_/2); j++) {
+		for (int i=(image.width/2-n_/2); i<(image.width/2+n_/2); i++) {
+			if (im+k) {
+				*(im+k) = raw[(i+j*image.width)];
+				k++;
+			}
+			else 
+				return false;
+		}
+	}
+
+#ifdef PRINT_DFT_IDFT
+	printf("--- im ---\n");
+	for (int j=0; j<m_; j++) {
+		for (int i=0; i<n_; i++) {
+			printf("[");
+			if (im[i+j*n_] < (uint8_t)100) {
+				printf(" ");
+			}
+			if (im[i+j*n_] < (uint8_t)10) {
+				printf(" ");
+			}
+			printf("%d]", im[i+j*n_]);
+		}
+		printf("\n");
+	}
+#endif
+	double m = m_;
+	double n = n_;
+	double l = m*n;
+	DFT dft;
+	if (m*n != l) 
+		return false;
+	double* img = new double[sizeof(double)*m*n];
+	if (img == NULL) 
+		return false;
+	for (int i=0; i<l; i++) {
+		img[i] = (double)im[i];
+	}
+	printf("DFT...\n");
+	dft.dft2(img, m, n, (double)window);
+
+	printf("SPCTRUM...\n");
+	double* spec = NULL;
+	double w;
+	double h;
+	dft.spectrum(spec, &w, &h, false);
+	//dft.fftshift(spec, w, h);
+#ifdef PRINT_DFT_IDFT //print
+	for (int v=0; v<(int)h; v++) {
+		for (int u=0; u<(int)w; u++) {
+			printf("[");
+			if (spec[u+v*(int)n] < 10000) printf(" ");
+			if (spec[u+v*(int)n] < 1000) printf(" ");
+			if (spec[u+v*(int)n] < 100) printf(" ");
+			if (spec[u+v*(int)n] < 10) printf(" ");
+			printf("%.1f]", spec[u+v*(int)n]);
+		}
+		printf("\n");
+	}
+#endif
+
+	printf("IDFT...\n");
+	double *output_idft = NULL;
+	dft.idft2(output_idft, &w, &h, (double)window);
+	uint8_t* output = new uint8_t[l];
+	if (output == NULL || output_idft == NULL)
+		return false;
+	for (int i=0; i<l; i++) {
+		if (output+i != NULL) {
+			output[i] = (uint8_t)((output_idft[i]));
+		}
+	}
+
+#ifdef PRINT_DFT_IDFT
+	printf("--- output ---\n");
+	for (int j=0; j<m_; j++) {
+		for (int i=0; i<n_; i++) {
+			printf("[");
+			if (output[i+j*n_] < 100) printf(" ");
+			if (output[i+j*n_] < 10) printf(" ");
+			printf("%d]", output[i+j*n_]);
+		}
+		printf("\n");
+	}
+#endif
+
+	ofstream fos;
+	try {
+		string file_name = "C:\\src\\amo\\DIP\\Debug\\iftLP.raw";
+		remove(file_name.c_str());
+		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+		if (fos.fail()) {
+			printf("%s\n", strerror(errno));
+			return false;
+		}
+		else fos.clear();
+		fos.write((char*)output, l*sizeof(uint8_t));
+		fos.close();
+	
+		file_name = "C:\\src\\amo\\DIP\\Debug\\specLP.raw";
+		remove(file_name.c_str());
+		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+		if (fos.fail()) {
+			printf("%s\n", strerror(errno));
+			return false;
+		}
+		else fos.clear();
+		if (spec)
+			fos.write((char*)spec, l*sizeof(double));
+		fos.close();
+	}
+	catch (exception ex) {
+		return false;
+	}
+
+	if (im)
+		delete[] im;
+	if (img)
+		delete[] img;
+	if (output)
+		delete[] output;
+	if (output_idft)
+		delete[] output_idft;
+	if (spec)
+		delete[] spec;
+
+	return true;
+}
 
 

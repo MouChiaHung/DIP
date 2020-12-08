@@ -80,6 +80,8 @@ public:
 	bool halftone_dots(uint8_t* dst, int lip);
 	bool FloydSteinbergDithering(uint8_t* dst);
 	bool dft_idft(int m_, int n_);
+	bool low_pass(int m_, int n_, int window);
+	bool low_pass_eff(int m_, int n_, int window);
 };
 
 #endif
