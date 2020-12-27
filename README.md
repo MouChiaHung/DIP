@@ -22,7 +22,7 @@ Digital Image Processing
 10.Edge detection.
 
 # Floyd Steinberg Dithering
-![image](https://github.com/MouChiaHung/DIP/blob/master/FloydSteinbergDithering.PNG)
+![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/FloydSteinbergDithering.png)
 
 # 2D Convolution
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/conv.jpg)
