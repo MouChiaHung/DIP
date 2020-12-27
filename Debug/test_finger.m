@@ -4,6 +4,8 @@ close all;
 % MOU LAB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %row=180;  col=80;
+%row=376;  col=240;
+row=100;  col=110;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -20,7 +22,7 @@ subplot(4,2,2);
 imshow((abs(BASE)), []);
 title('2D FFT of base image');
 
-noise = bf_noise(row,col,2);
+noise = bf_noise(row,col,1);
 NOISE = fft2(noise);
 NOISE = fftshift(NOISE);
 subplot(4,2,3);
@@ -52,8 +54,44 @@ title('final image filtered by inverse 2D FFT of (2D FFT of noised image - 2D FF
 return;
 %}
 
-foo('fingerE', row, col);
-filter('fingerE','fingerE', row, col);
+%foo('Finger', row, col);
+%foo('Finger_filtered', row, col);
+%filter('Finger','Finger_filtered', row, col);
+%filter('NG','GND', row, col);
+%filter('No_GND_no_charge\1605654214424','GND_no_charge\1605654090835', row, col);
+%filter('No_GND_no_charge\1605654215487','GND_no_charge\1605654093272', row, col);
+%filter('No_GND_no_charge\1605654216505','GND_no_charge\1605654094949', row, col);
+%filter('No_GND_no_charge\1605654217487','GND_no_charge\1605654096608', row, col);
+%filter('No_GND_no_charge\1605654218469','GND_no_charge\1605654098065', row, col);
+
+%foo('files\gnd_charger_laptop', row, col);
+foo('finger_on_corner_1', row, col);
+%foo('finger_on_corner_2', row, col);
+
+psd('finger_on_corner_1', row, col);
+psd('files\gnd_charger_laptop', row, col);
+
+return;
+
+
+function ret = psd(file, row, col)
+    fin=fopen(file,'r');
+    I=fread(fin,row*col,'uint8=>uint8');
+    Z=uint8(I);
+    Z=reshape(Z,row,col);
+    Z=Z';
+    fclose(fin);
+    figure('Name',file,'NumberTitle','off');
+    subplot(1,2,1);
+    imshow(Z, [0,255]);
+    title(file);
+    
+    I_VCL = double(Z(row/2,:));
+    subplot(1,2,2);
+    pwelch(I_VCL);
+end
+
+
 
 function ret = foo(file, row, col)
     fin=fopen(file,'r');
@@ -71,28 +109,28 @@ function ret = foo(file, row, col)
     FPGM = fft2(ZPGM);
     FPGMAbs = abs(FPGM);
     %remove DC
-    %{
-    for j = 1 : 2
-        for i = 1 : 2
+    %
+    for j = 1 : 1
+        for i = 1 : 1
             FPGMAbs(i,j) = 0;
             FPGMAbs((col+1)-i,j) = 0;
             FPGMAbs(i,(row+1)-j) = 0;
             FPGMAbs((col+1)-i,(row+1)-j) = 0;    
         end
     end
-    %}
+    %
     magFPGM = (1/(row*col)*abs(fftshift(FPGMAbs)));
-    %magFPGM = (1/(row*col)*abs((FPGMAbs)));
+    %magFPGM = abs(fftshift(FPGMAbs));
     subplot(2,2,2);
     imshow(magFPGM, []);
     title('fft2');
 
-    magFPGM_HCL = magFPGM(:,189);
+    magFPGM_HCL = magFPGM(:,row/2);
     subplot(2,2,3);
     plot(magFPGM_HCL);
     title('fft2 horizontal central line');
     
-    magFPGM_VCL = magFPGM(121,:);
+    magFPGM_VCL = magFPGM(col/2,:);
     subplot(2,2,4);
     plot(magFPGM_VCL);
     title('fft2 vertical central line');
@@ -182,8 +220,8 @@ function ret = filter(file1, file2, row, col)
     F1_DC = F1_DC_pre(1,1);
     %remove DC
     %
-    for j = 1 : 4
-        for i = 1 : 4
+    for j = 1 : 1
+        for i = 1 : 1
             F1(i,j) = 0;
             F1((col+1)-i,j) = 0;
             F1(i,(row+1)-j) = 0;
@@ -216,8 +254,8 @@ function ret = filter(file1, file2, row, col)
     F2_DC = F2_DC_pre(1,1);
     %remove DC
     %
-    for j = 1 : 4
-        for i = 1 : 4
+    for j = 1 : 1
+        for i = 1 : 1
             F2(i,j) = 0;
             F2((col+1)-i,j) = 0;
             F2(i,(row+1)-j) = 0;
@@ -255,7 +293,7 @@ function ret = filter(file1, file2, row, col)
     F3ABS_CL = F3ABS(:,189);
     subplot(4,3,12);
     plot(F3ABS_CL);
-    string33 = "plot of " + string3;
+    string33 = "horizontal central line of " + string3;
     title(string33);
     
     subplot(4,3,10);
@@ -293,7 +331,7 @@ function im = bf_noise(row, col, mode)
         for j = 1 : col
             if (mode == 1)
                 if (i==j)
-                    im(i,j) = 255;   
+                    im(i,j) = 255;
                 end     
             elseif (mode == 2)
                 if (i==row/2||i==1+row/2||i==2+row/2||i==3+row/2)

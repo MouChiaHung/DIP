@@ -594,9 +594,11 @@ bool Tiff::bit_plane_reconstruct(uint8_t* src) {
 	else fos.clear();
 	fos.write((char*)raw, size_raw);
 	fos.close();
+	return true;
 	}
 	catch (exception ex) {
 		return false;
+		return true;
 	}
 }
 

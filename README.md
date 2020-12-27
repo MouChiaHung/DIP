@@ -1,7 +1,7 @@
 # DIP
 Digital Image Processing
 
-1.Tiff file parser.
+1.PGM and Tiff file parser.
 
 2.Bright.
 
@@ -13,16 +13,27 @@ Digital Image Processing
 
 6.Floyd Steinberg Dithering.
 
-7.Fourier transform.
+7.2D Fourier transform.
 
-8.Convolution.
+8.2D Convolution.
+
+9.Gaussian filter.
+
+10.Edge detection.
 
 # Floyd Steinberg Dithering
-
 ![image](https://github.com/MouChiaHung/DIP/blob/master/FloydSteinbergDithering.PNG)
 
-# DFT and IDFT
-![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/finger.jpg)
+# 2D Convolution
+![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/conv.jpg)
 
-# Spectrum
-![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/spec.jpg)
+# 2D Fourier transform analysis
+![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/denoised.jpg)
+
+# Gaussian filter
+![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/GaussionDistribution2D.jpg)
+
+# Edge detection
+![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/sobel_filter.jpg)
+
+![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/sobel_filter_edge.jpg)

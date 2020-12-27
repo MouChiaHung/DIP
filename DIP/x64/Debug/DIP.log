@@ -1,0 +1,141 @@
+﻿  dft.cpp
+  The contents of <filesystem> are available only with C++17 or later.
+C:\src\amo\DIP\DIP\dft.cpp(57,61): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(60,45): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(106,61): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(109,45): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(155,41): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(158,33): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(213,41): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(216,33): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(281,35): warning C4244: 'initializing': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\dft.cpp(284,33): warning C4244: 'argument': conversion from 'double' to 'size_t', possible loss of data
+  filter.cpp
+  The contents of <filesystem> are available only with C++17 or later.
+C:\src\amo\DIP\DIP\filter.cpp(291,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\filter.cpp(343,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  main.cpp
+  The contents of <filesystem> are available only with C++17 or later.
+C:\src\amo\DIP\DIP\main.cpp(72,26): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\src\amo\DIP\DIP\main.cpp(66,3): error C4996: 'setbuf': This function or variable may be unsafe. Consider using setvbuf instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(70,3): error C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(73,3): error C4996: 'vsprintf': This function or variable may be unsafe. Consider using vsprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(94,26): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\src\amo\DIP\DIP\main.cpp(88,3): error C4996: 'setbuf': This function or variable may be unsafe. Consider using setvbuf instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(92,3): error C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(95,3): error C4996: 'vsprintf': This function or variable may be unsafe. Consider using vsprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(113,26): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\src\amo\DIP\DIP\main.cpp(107,3): error C4996: 'setbuf': This function or variable may be unsafe. Consider using setvbuf instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(111,3): error C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(114,3): error C4996: 'vsprintf': This function or variable may be unsafe. Consider using vsprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(135,26): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\src\amo\DIP\DIP\main.cpp(129,3): error C4996: 'setbuf': This function or variable may be unsafe. Consider using setvbuf instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(133,3): error C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(136,3): error C4996: 'vsprintf': This function or variable may be unsafe. Consider using vsprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(214,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(230,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(246,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(262,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(278,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(294,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(310,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(326,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(356,13): error C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(357,26): error C4996: 'asctime': This function or variable may be unsafe. Consider using asctime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(646,13): error C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\main.cpp(647,24): error C4996: 'asctime': This function or variable may be unsafe. Consider using asctime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  pgm.cpp
+  The contents of <filesystem> are available only with C++17 or later.
+C:\src\amo\DIP\DIP\pgm.cpp(45,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\pgm.cpp(63,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\pgm.cpp(80,8): error C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\pgm.cpp(92,9): error C4996: 'strtok': This function or variable may be unsafe. Consider using strtok_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\pgm.cpp(98,9): error C4996: 'strtok': This function or variable may be unsafe. Consider using strtok_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\pgm.cpp(108,9): error C4996: 'strtok': This function or variable may be unsafe. Consider using strtok_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\pgm.cpp(215,43): warning C4244: 'initializing': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(245,44): warning C4244: 'initializing': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(255,32): warning C4244: 'initializing': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(293,29): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(312,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(331,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(289,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\pgm.cpp(307,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\pgm.cpp(326,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\pgm.cpp(401,43): warning C4244: 'initializing': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(433,32): warning C4244: 'initializing': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(489,29): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(508,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\pgm.cpp(467,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\pgm.cpp(485,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\pgm.cpp(503,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\pgm.cpp(568,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  tiff.cpp
+  The contents of <filesystem> are available only with C++17 or later.
+C:\src\amo\DIP\DIP\tiff.cpp(115,17): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(116,18): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(45,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(53,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(227,17): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(142,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(150,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(284,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(317,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(355,17): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(356,18): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(420,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(436,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(452,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(468,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(484,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(500,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(516,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(532,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(570,17): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(571,18): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(591,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(636,17): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(638,18): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(639,26): warning C4018: '>=': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(645,17): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(646,18): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(647,24): warning C4018: '>=': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(664,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(695,17): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(696,18): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(711,9): warning C4018: '>=': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(713,17): warning C4018: '>=': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(719,26): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(721,24): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(723,26): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(729,26): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(731,24): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(733,26): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(748,18): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(775,37): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(776,37): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(816,43): warning C4244: 'initializing': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(846,44): warning C4244: 'initializing': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(856,32): warning C4244: 'initializing': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(888,29): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(900,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(912,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(884,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(895,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(907,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(949,37): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(950,37): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(982,43): warning C4244: 'initializing': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1024,32): warning C4244: 'initializing': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1056,29): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1068,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1052,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(1063,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(1103,37): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(1104,37): warning C4018: '<': signed/unsigned mismatch
+C:\src\amo\DIP\DIP\tiff.cpp(1136,43): warning C4244: 'initializing': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1168,32): warning C4244: 'initializing': conversion from 'double' to 'size_t', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1200,29): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1212,28): warning C4244: 'argument': conversion from 'double' to 'std::streamsize', possible loss of data
+C:\src\amo\DIP\DIP\tiff.cpp(1196,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\src\amo\DIP\DIP\tiff.cpp(1207,19): error C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  Generating Code...

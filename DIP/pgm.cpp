@@ -3,6 +3,7 @@
 	*******************************************************************************/
 #include "pgm.h"
 #include "dft.h"
+#include "filter.h"
 using namespace std;
 
 	/******************************************************************************
@@ -44,8 +45,7 @@ bool PGM::read(string file_name, uint8_t*& data, int* size) {
 		printf("%s\n", strerror(errno));
 		return false;
 	}
-#if 1
-	
+
 #if 0
 	string file_name_raw = "C:\\src\\amo\\DIP\\Debug\\pgm.raw";
 #else
@@ -64,7 +64,7 @@ bool PGM::read(string file_name, uint8_t*& data, int* size) {
 		return false;
 	}
 	else fos.clear();
-#endif
+	file = file_name_raw;
 
 	fis.seekg(0, ios::beg);
 	string line; 
@@ -90,14 +90,26 @@ bool PGM::read(string file_name, uint8_t*& data, int* size) {
 		else if (i == 1) {
 			char* pc = NULL;
 			pc = strtok((char*)line.c_str(), " ");
+			if (pc == NULL || !(*pc>=0x30 && *pc<=0x39)) {
+				i--;
+				continue;
+			}
 			this->width = std::stoi(string(pc), NULL);
 			pc = strtok(NULL, " ");
+			if (pc == NULL || !(*pc>=0x30 && *pc<=0x39)) {
+				i--;
+				continue;
+			}
 			this->height = std::stoi(string(pc), NULL);
 			this->size = width*height;
 		}
 		else if (i == 2) {
 			char* pc = NULL;
 			pc = strtok((char*)line.c_str(), " ");
+			if (pc == NULL || !(*pc>=0x30 && *pc<=0x39)) {
+				i--;
+				continue;
+			}
 			int l = std::stoi(string(pc), NULL);
 			if (l >= 0xffff) {
 				this->depth = 2;
@@ -140,9 +152,10 @@ bool PGM::read(string file_name, uint8_t*& data, int* size) {
 			//if (i == height) fos << endl;
 		}
 	}
-	printf("Extract raw data to C:\\src\\amo\\DIP\\Debug\\pgm.raw\n");
+	printf("output file:%s\n", file_name_raw.c_str());
 	fis.close();
 	fos.close();
+
 
 	return true;
 }
@@ -263,9 +276,15 @@ bool PGM::dft_idft(int m_, int n_) {
 
 	ofstream fos;
 	try {
-		string file_name = "C:\\src\\amo\\DIP\\Debug\\ift.raw";
-		remove(file_name.c_str());
-		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+		string file_name_raw = "";
+		string file_name_raw_path = file.substr(0, file.find_last_of("/\\"));
+		string file_name_raw_file = file.substr(file.find_last_of("/\\"));
+		string file_name_raw_file_to_matlab = file_name_raw_file.substr(0, file_name_raw_file.find_last_of("/.")) + "Ift.raw";
+		file_name_raw += file_name_raw_path;
+		file_name_raw += file_name_raw_file_to_matlab;
+		file_name_raw += "";
+		remove(file_name_raw.c_str());
+		fos.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
 		if (fos.fail()) {
 			printf("%s\n", strerror(errno));
 			return false;
@@ -273,10 +292,17 @@ bool PGM::dft_idft(int m_, int n_) {
 		else fos.clear();
 		fos.write((char*)output, l*sizeof(uint8_t));
 		fos.close();
+		printf("output file:%s\n", file_name_raw.c_str());
 	
-		file_name = "C:\\src\\amo\\DIP\\Debug\\spec.raw";
-		remove(file_name.c_str());
-		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+		file_name_raw = "";
+		file_name_raw_path = file.substr(0, file.find_last_of("/\\"));
+		file_name_raw_file = file.substr(file.find_last_of("/\\"));
+		file_name_raw_file_to_matlab = file_name_raw_file.substr(0, file_name_raw_file.find_last_of("/.")) + "Spec.raw";
+		file_name_raw += file_name_raw_path;
+		file_name_raw += file_name_raw_file_to_matlab;
+		file_name_raw += "";
+		remove(file_name_raw.c_str());
+		fos.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
 		if (fos.fail()) {
 			printf("%s\n", strerror(errno));
 			return false;
@@ -285,10 +311,17 @@ bool PGM::dft_idft(int m_, int n_) {
 		if (spec)
 			fos.write((char*)spec, l*sizeof(double));
 		fos.close();
+		printf("output file:%s\n", file_name_raw.c_str());
 
-		file_name = "C:\\src\\amo\\DIP\\Debug\\real.raw";
-		remove(file_name.c_str());
-		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+		file_name_raw = "";
+		file_name_raw_path = file.substr(0, file.find_last_of("/\\"));
+		file_name_raw_file = file.substr(file.find_last_of("/\\"));
+		file_name_raw_file_to_matlab = file_name_raw_file.substr(0, file_name_raw_file.find_last_of("/.")) + "_spec.raw";
+		file_name_raw += file_name_raw_path;
+		file_name_raw += file_name_raw_file_to_matlab;
+		file_name_raw += "";
+		remove(file_name_raw.c_str());
+		fos.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
 		if (fos.fail()) {
 			printf("%s\n", strerror(errno));
 			return false;
@@ -297,6 +330,7 @@ bool PGM::dft_idft(int m_, int n_) {
 		if (real)
 			fos.write((char*)real, l*sizeof(double));
 		fos.close();
+		printf("output file:%s\n", file_name_raw.c_str());
 	}
 	catch (exception ex) {
 		return false;
@@ -419,10 +453,16 @@ bool PGM::low_pass_eff(int m_, int n_, int window) {
 #endif
 
 	ofstream fos;
-	try {
-		string file_name = "C:\\src\\amo\\DIP\\Debug\\lp.raw";
-		remove(file_name.c_str());
-		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+	try {	
+		string file_name_raw = "";
+		string file_name_raw_path = file.substr(0, file.find_last_of("/\\"));
+		string file_name_raw_file = file.substr(file.find_last_of("/\\"));
+		string file_name_raw_file_to_matlab = file_name_raw_file.substr(0, file_name_raw_file.find_last_of("/.")) + ".raw";
+		file_name_raw += file_name_raw_path;
+		file_name_raw += file_name_raw_file_to_matlab;
+		file_name_raw += "";
+		remove(file_name_raw.c_str());
+		fos.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
 		if (fos.fail()) {
 			printf("%s\n", strerror(errno));
 			return false;
@@ -430,10 +470,17 @@ bool PGM::low_pass_eff(int m_, int n_, int window) {
 		else fos.clear();
 		fos.write((char*)im, m_*n_*sizeof(uint8_t));
 		fos.close();
+		printf("output file:%s\n", file_name_raw.c_str());
 
-		file_name = "C:\\src\\amo\\DIP\\Debug\\iftLP.raw";
-		remove(file_name.c_str());
-		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+		file_name_raw = "";
+		file_name_raw_path = file.substr(0, file.find_last_of("/\\"));
+		file_name_raw_file = file.substr(file.find_last_of("/\\"));
+		file_name_raw_file_to_matlab = file_name_raw_file.substr(0, file_name_raw_file.find_last_of("/.")) + "IftLP.raw";
+		file_name_raw += file_name_raw_path;
+		file_name_raw += file_name_raw_file_to_matlab;
+		file_name_raw += "";
+		remove(file_name_raw.c_str());
+		fos.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
 		if (fos.fail()) {
 			printf("%s\n", strerror(errno));
 			return false;
@@ -441,10 +488,17 @@ bool PGM::low_pass_eff(int m_, int n_, int window) {
 		else fos.clear();
 		fos.write((char*)output, l*sizeof(uint8_t));
 		fos.close();
+		printf("output file:%s\n", file_name_raw.c_str());
 	
-		file_name = "C:\\src\\amo\\DIP\\Debug\\specLP.raw";
-		remove(file_name.c_str());
-		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+		file_name_raw = "";
+		file_name_raw_path = file.substr(0, file.find_last_of("/\\"));
+		file_name_raw_file = file.substr(file.find_last_of("/\\"));
+		file_name_raw_file_to_matlab = file_name_raw_file.substr(0, file_name_raw_file.find_last_of("/.")) + "SpecLP.raw";
+		file_name_raw += file_name_raw_path;
+		file_name_raw += file_name_raw_file_to_matlab;
+		file_name_raw += "";
+		remove(file_name_raw.c_str());
+		fos.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
 		if (fos.fail()) {
 			printf("%s\n", strerror(errno));
 			return false;
@@ -453,6 +507,7 @@ bool PGM::low_pass_eff(int m_, int n_, int window) {
 		if (spec)
 			fos.write((char*)spec, l*sizeof(double));
 		fos.close();
+		printf("output file:%s\n", file_name_raw.c_str());
 	}
 	catch (exception ex) {
 		return false;
@@ -468,6 +523,64 @@ bool PGM::low_pass_eff(int m_, int n_, int window) {
 		delete[] output_idft;
 	if (spec)
 		delete[] spec;
+
+	return true;
+}
+
+bool PGM::filtering(double* kernel, int window) {
+	if (raw == NULL)	return false;
+	if (size <= 0)	return false;
+	if (window > height || window > width) return false;
+
+	Filter filter;
+	double* filtered = NULL;
+	uint8_t* output = new uint8_t[sizeof(uint8_t)*width*height];
+	double* src = new double[sizeof(double)*width*height];
+	if (src == NULL) return false;
+	memset(src, 0, sizeof(double)*width*height);
+	for (int j=0; j<height; j++) {
+		for (int i=0; i<width; i++) {
+			src[i+j*width] = raw[i+j*width];
+		}
+	}
+
+	if (!(filter.convolution(filtered, src, kernel, width, height, window))) {
+		return false;
+	}
+	for (int j=0; j<height; j++) {
+		for (int i=0; i<width; i++) {
+			output[i+j*width] = (uint8_t)filtered[i+j*width];
+		}
+	}
+
+	ofstream fos;
+	try {
+		string file_name_raw = "";
+		string file_name_raw_path = file.substr(0, file.find_last_of("/\\"));
+		string file_name_raw_file = file.substr(file.find_last_of("/\\"));
+		string file_name_raw_file_to_matlab = file_name_raw_file.substr(0, file_name_raw_file.find_last_of("/.")) + "Filtered";
+		file_name_raw += file_name_raw_path;
+		file_name_raw += file_name_raw_file_to_matlab;
+		file_name_raw += "";
+		remove(file_name_raw.c_str());
+		fos.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+		if (fos.fail()) {
+			printf("%s\n", strerror(errno));
+			return false;
+		}
+		else fos.clear();
+		fos.write((char*)output, width*height*sizeof(uint8_t));
+		fos.close();
+		printf("output file:%s\n", file_name_raw.c_str());
+	}
+	catch (exception ex) {
+		return false;
+	}
+
+	if (src)
+		delete[] src;
+	if (filtered)
+		delete[] filtered;
 
 	return true;
 }

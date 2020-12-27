@@ -11,6 +11,7 @@
 #include "conio.h"
 #include "tiff.h"
 #include "dft.h"
+#include "filter.h"
 #include <time.h>  
 #include "pgm.h"
 
@@ -328,6 +329,7 @@ bool print_bit_plane(uint8_t* src, int w, int h) {
 	else fos_7.clear();
 	fos_7.write((char*)dst_7, len_plane);
 	fos_7.close();
+	return true;
 	}
 	catch (exception ex) {
 		return false;
@@ -392,17 +394,33 @@ int main()
 	dft.fftshift(spec, (int)w, (int)h);
 	dft.idft2(image, &w, &h);
 
-	double* dst = NULL;
+	double* dst_1 = NULL;
 	double src_1[3*2] = {1,2,3,4,5,6};
 	double kernel_1[2*2] = {1,1,1,1};
-	dft.convolutionPadding(dst, src_1, kernel_1, 3, 2, 2);
-	double src[3*3] = {1,2,3,4,5,6,7,8,9};
-	double kernel[3*3] = {-1,-2,-1,0,0,0,1,2,1};
-	dft.convolution(dst, src, kernel, 3, 3, 3);
+	//dft.convolutionPadding(dst_1, src_1, kernel_1, 3, 2, 2);
+
+	double* dst2 = NULL;
+	double src2[5*6] = {25,100,75,49,130,
+						50,80,0,70,100,
+						5,10,20,30,0,
+						60,50,12,24,32,
+						37,53,55,21,90,
+						140,17,0,23,222
+						};
+	double kernel2[3*3] = {1,0,1,
+						   0,1,0,
+						   0,0,1};
+	dft.convolution(dst2, src2, kernel2, 5, 6, 3);
+	dft.convolutionZeroPadding(dst2, src2, kernel2, 5, 6, 3);
+
+	double* dst3 = NULL;
+	double src3[3*3] = {1,2,3,4,5,6,7,8,9};
+	double kernel3[3*3] = {-1,-2,-1,0,0,0,1,2,1};
+	//dft.convolution(dst3, src3, kernel3, 3, 3, 3);
+	//dft.convolutionZeroPadding(dst3, src3, kernel3, 3, 3, 3);
 
 	return 0;
 #endif
-
 
 	return 0;
 #endif
@@ -411,23 +429,144 @@ int main()
 	uint8_t* data_pgm = NULL;
 	int size_pgm = 0;
 	PGM pgm;
-	pgm.read("C:\\src\\amo\\DIP\\Debug\\fingerE.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\2object.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\lena.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\edge.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\cell.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\virus.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\fingerAir.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\finger.pgm", data_pgm, &size_pgm);
+	pgm.read("C:\\src\\amo\\DIP\\Debug\\Finger2030A.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\finger_on_corner_1 .pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\finger_on_corner_2.pgm", data_pgm, &size_pgm);
 
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\GND_no_charge\\1605654090835.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\GND_no_charge\\1605654093272.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\GND_no_charge\\1605654094949.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\GND_no_charge\\1605654096608.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\GND_no_charge\\1605654098065.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\No_GND_no_charge\\1605654214424.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\No_GND_no_charge\\1605654215487.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\No_GND_no_charge\\1605654216505.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\No_GND_no_charge\\1605654217487.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\No_GND_no_charge\\1605654218469.pgm", data_pgm, &size_pgm);
+
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\files\\gnd_charger_laptop.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\files\\finger_charger_laptop.pgm", data_pgm, &size_pgm);
+
+#if 0 //filtering
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	printf("filtering() start time:%s", asctime(timeinfo) );
 #if 0
+	double kernel[3*3] = { 0.1, 0.1, 0.1,
+						   0.1, 0.1, 0.1,
+						   0.1, 0.1, 0.1,};
+#elif 1 //Low pass
+	double kernel[3*3] = { 1/16.0, 1/8.0, 1/16.0,
+						   1/8.0 , 1/4.0, 1/8.0,
+						   1/16.0, 1/8.0, 1/16.0};
+#elif 0 //Identity
+	double kernel[3*3] = { 0.0, 0.0, 0.0,
+						   0.0, 1.0, 0.0,
+						   0.0, 0.0, 0.0 };
+#elif 0 //High pass A
+	double kernel[3*3] = { 0.0-1/16.0, 0.0-1/8.0, 0.0-1/16.0,
+						   0.0-1/8.0 , 1.0-1/4.0, 0.0-1/8.0,
+						   0.0-1/16.0, 0.0-1/8.0, 0.0-1/16.0};
+#elif 0 //High pass B
+	double kernel[3*3] = { 0.0-1/9.0, 0.0-1/9.0, 0.0-1/9.0,
+						   0.0-1/9.0, 1.0-1/9.0, 0.0-1/9.0,
+						   0.0-1/9.0, 0.0-1/9.0, 0.0-1/9.0};
+#else 
+	double kernel[3*3] = { 0.0, 0.1, 0,
+						   0.2, 0.4, 0.2,
+						   0.0, 0.1, 0};
+#endif
+//Laplacian
+	double kernel_Gaussian[3*3] = { 1/16.0, 1/8.0, 1/16.0,
+									1/8.0 , 1/4.0, 1/8.0,
+									1/16.0, 1/8.0, 1/16.0};
+
+	double kernel_Laplacian_A[3*3] = {-1.0, -1.0, -1.0,
+									  -1.0,  8.0, -1.0,
+									  -1.0, -1.0, -1.0};
+
+	double kernel_Laplacian_B[3*3] = {0.0,-1.0, 0.0,
+									 -1.0, 4.0,-1.0,
+									  0.0,-1.0, 0.0};
+	
+	
+	double kernel_LoG[5*5] = {0.0,0.0,  1.0,0.0,0.0,
+							  0.0,1.0,  2.0,1.0,0.0,
+							  1.0,2.0,-16.0,2.0,1.0,	
+							  0.0,1.0,  2.0,1.0,0.0,
+							  0.0,0.0,  1.0,0.0,0.0};
+	double kernel_Gaussian_times_Laplacian[3*3] = { -1.0/16.0,  -1.0/8.0, -1.0/16.0,
+													-1.0/8.0,   8.0/4.0,  -1.0/8.0,
+													-1.0/16.0,  -1.0/8.0, -1.0/16.0};
+
+	/*
+	//A
+	[   0.00][   0.38][   0.00]
+	[   0.38][   1.25][   0.38]
+	[   0.00][   0.38][   0.00]
+	//B
+	[   0.00][   0.12][   0.00]
+	[   0.12][   0.50][   0.12]
+	[   0.00][   0.12][   0.00]
+	*/
+	double *kernel_Gaussian_conv_Laplacian = NULL;
+
+	Filter filter;
+	filter.convolution(kernel_Gaussian_conv_Laplacian, kernel_Gaussian, kernel_Laplacian_B, 3, 3, 3);
+
+	//pgm.filtering(kernel, 3);
+	pgm.filtering(kernel_Laplacian_B, 3);
+	//pgm.filtering(kernel_Gaussian_conv_Laplacian, 3);
+	//pgm.filtering(kernel_LoG, 5);
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	printf("filtering() end   time:%s", asctime(timeinfo) );
+#endif
+
+#if 1
+	if (pgm.raw == NULL) {
+		cout << "pgm has no raw!" << endl;
+		return 0;
+	} 
+
+	Filter filter;
+	double* edged = NULL;
+
+	double* src = new double[sizeof(double)*pgm.width*pgm.height];
+	for (int j=0; j<pgm.height; j++) {
+		for (int i=0; i<pgm.width; i++) {
+			src[i+j*pgm.width] = pgm.raw[i+j*pgm.width];
+		}
+	}
+
+	double* src_gaussianed = new double[sizeof(double)*pgm.width*pgm.height];
+	filter.gaussian(src_gaussianed, src, pgm.width, pgm.height, pgm.file);
+	filter.sobel(edged, src, pgm.width, pgm.height, pgm.file);
+
+#endif
+
+#if 0 //dft and idft
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
 	printf("dft_idft() start time:%s", asctime(timeinfo) );
-	pgm.dft_idft(80, 180);
+	pgm.dft_idft(80, 80);
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
 	printf("dft_idft() end   time:%s", asctime(timeinfo) );
 #endif
 
-#if 0
+#if 0 //box filter
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
 	printf("low_pass_eff() start time:%s", asctime(timeinfo) );
-	pgm.low_pass_eff(80, 180, 40);
+	pgm.low_pass_eff(80, 80, 16);
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
 	printf("low_pass_eff() end   time:%s", asctime(timeinfo) );

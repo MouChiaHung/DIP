@@ -22,6 +22,8 @@ public:
 	bool read(string file_name, uint8_t*& data, int* size);
 	bool dft_idft(int m_, int n_);
 	bool low_pass_eff(int m_, int n_, int window);
+	bool filtering(double* kernel, int window);
+	string file;
 	int type;
 	int width;
 	int height;

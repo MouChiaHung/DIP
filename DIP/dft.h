@@ -30,8 +30,8 @@ public:
 	bool idft2(double*& dst, double* w, double* h);
 	bool idft2(double*& dst, double* w, double* h, double window);
 	bool fftshift(double*& buf, int w, int h);
-	bool convolution(double* dst, double* src, double* kernel, int width, int height, int window);
-	bool convolutionPadding(double* dst, double* src, double* kernel, int width, int height, int window);
+	bool convolution(double*& dst, double* src, double* kernel, int width, int height, int window);
+	bool convolutionZeroPadding(double*& dst, double* src, double* kernel, int width, int height, int window);
 	template<typename T> T mod(const T& a, const T& b);
 };
 #endif
