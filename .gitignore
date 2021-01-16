@@ -21,3 +21,8 @@ $RECYCLE.BIN/
 # =========================
 # Operating System Files
 # =========================
+
+
+# Ignoring directories
+# Both the directory itself and its contents will be ignored.
+.vs/

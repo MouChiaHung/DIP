@@ -24,7 +24,7 @@ Digital Image Processing
 11.2D Gradient
 
 # Floyd Steinberg Dithering
-![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/FloydSteinbergDithering.png)
+![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/FloydSteinbergDithering.PNG)
 
 # 2D Convolution
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/conv.jpg)
