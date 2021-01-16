@@ -4,29 +4,23 @@ close all;
 % FILTER LAB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-
 file_raw = 'cell';
 row=199; col=200;
-
-file_raw = 'lena';
-row=256; col=256;
-
-
-file_raw = '2object';
-row=320; col=240;
-
-
-
-
-file_raw = 'edge';
-row=256; col=256;
 
 file_raw = 'finger';
 row=180; col=80;
 
 file_raw = 'finger2030A';
 row=376; col=240;
+
+file_raw = 'edge';
+row=256; col=256;
+
+file_raw = '2object';
+row=320; col=240;
+
+file_raw = 'lena';
+row=256; col=256;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GAUSSIAN LAB
@@ -148,7 +142,7 @@ Raw=Raw';
 fclose(fin);
 show(Raw, file_raw_gaussian, row, col);
 
-%pgm.raw
+%filtered data
 file_raw_filtered = append(tmp,'Filtered');
 fin=fopen(file_raw_filtered,'r');
 Filtered=fread(fin,row*col,'uint8=>uint8');
@@ -157,13 +151,25 @@ Filtered=Filtered';
 fclose(fin);
 show(Filtered, file_raw_filtered, row, col);
 
-figure('Name','sobel','NumberTitle','off');
-subplot(1,2,1);
+%gradient2 data
+file_raw_gradient2 = append(tmp,'Gradient2');
+fin=fopen(file_raw_gradient2,'r');
+Gradient2=fread(fin,row*col,'uint8=>uint8');
+Gradient2=reshape(Gradient2,row,col);
+Gradient2=Gradient2';
+fclose(fin);
+show(Gradient2, file_raw_gradient2, row, col);
+
+figure('Name','EdgeDet','NumberTitle','off');
+subplot(2,2,1);
 imshow(Raw);
 title('Gaussianed image')
-subplot(1,2,2);
+subplot(2,2,3);
 imshow(Filtered);
 title('Edge-detected by Sobel filter')
+subplot(2,2,4);
+imshow(Gradient2);
+title('Edge-detected by Gradient2 filter')
 
 %Filtering by matlab
 %{

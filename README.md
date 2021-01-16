@@ -1,25 +1,27 @@
 # DIP
 Digital Image Processing
 
-1.PGM and Tiff file parser.
+1.PGM and Tiff file parser
 
-2.Bright.
+2.Bright
 
-3.Inverse.
+3.Inverse
 
-4.Bit-plane slicing and reconstruct.
+4.Bit-plane slicing and reconstruct
 
-5.Halftone.
+5.Halftone
 
-6.Floyd Steinberg Dithering.
+6.Floyd Steinberg Dithering
 
-7.2D Fourier transform.
+7.2D Fourier transform
 
-8.2D Convolution.
+8.2D Convolution
 
-9.Gaussian filter.
+9.Gaussian filter
 
-10.Edge detection.
+10.Edge detection
+
+11.2D Gradient
 
 # Floyd Steinberg Dithering
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/FloydSteinbergDithering.png)
@@ -37,3 +39,6 @@ Digital Image Processing
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/sobel_filter.jpg)
 
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/sobel_filter_edge.jpg)
+
+# 2D Gradient
+![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/gradient_2object.jpg)

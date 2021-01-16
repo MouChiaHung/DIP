@@ -429,14 +429,14 @@ int main()
 	uint8_t* data_pgm = NULL;
 	int size_pgm = 0;
 	PGM pgm;
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\2object.pgm", data_pgm, &size_pgm);
+	pgm.read("C:\\src\\amo\\DIP\\Debug\\2object.pgm", data_pgm, &size_pgm);
 	//pgm.read("C:\\src\\amo\\DIP\\Debug\\lena.pgm", data_pgm, &size_pgm);
 	//pgm.read("C:\\src\\amo\\DIP\\Debug\\edge.pgm", data_pgm, &size_pgm);
 	//pgm.read("C:\\src\\amo\\DIP\\Debug\\cell.pgm", data_pgm, &size_pgm);
 	//pgm.read("C:\\src\\amo\\DIP\\Debug\\virus.pgm", data_pgm, &size_pgm);
 	//pgm.read("C:\\src\\amo\\DIP\\Debug\\fingerAir.pgm", data_pgm, &size_pgm);
 	//pgm.read("C:\\src\\amo\\DIP\\Debug\\finger.pgm", data_pgm, &size_pgm);
-	pgm.read("C:\\src\\amo\\DIP\\Debug\\Finger2030A.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\Finger2030A.pgm", data_pgm, &size_pgm);
 	//pgm.read("C:\\src\\amo\\DIP\\Debug\\finger_on_corner_1 .pgm", data_pgm, &size_pgm);
 	//pgm.read("C:\\src\\amo\\DIP\\Debug\\finger_on_corner_2.pgm", data_pgm, &size_pgm);
 
@@ -538,6 +538,9 @@ int main()
 
 	Filter filter;
 	double* edged = NULL;
+	double* lap = NULL;
+	double* mag = NULL;
+	double* ori = NULL;
 
 	double* src = new double[sizeof(double)*pgm.width*pgm.height];
 	for (int j=0; j<pgm.height; j++) {
@@ -548,7 +551,9 @@ int main()
 
 	double* src_gaussianed = new double[sizeof(double)*pgm.width*pgm.height];
 	filter.gaussian(src_gaussianed, src, pgm.width, pgm.height, pgm.file);
-	filter.sobel(edged, src, pgm.width, pgm.height, pgm.file);
+	//filter.sobel(edged, src, pgm.width, pgm.height, pgm.file);
+	filter.gradient(mag, ori, src, pgm.width, pgm.height, pgm.file);
+	filter.laplacian(lap, src, pgm.width, pgm.height, pgm.file);
 
 #endif
 
