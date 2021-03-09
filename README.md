@@ -33,7 +33,7 @@ Digital Image Processing
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/denoised.jpg)
 
 # Gaussian filter
-![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/GaussionDistribution2D.jpg)
+![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/Gaussion%20distribution%202D.jpg)
 
 # Edge detection
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/sobel_filter.jpg)
