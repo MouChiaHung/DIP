@@ -1,4 +1,4 @@
-## **** My Digital Image Processing Lab ****
+## My Digital Image Processing Lab
 #### [1] PGM and Tiff file parser
 #### [2] Bright
 #### [3] Inverse
@@ -36,5 +36,5 @@
 ## Discrete cosine transform
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/my_dct_and_idct_lp_filter.jpg)
 
-# Blurring and deblurring
+## Blurring and deblurring
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/lena_deconv_psf_with_lp.jpg)
