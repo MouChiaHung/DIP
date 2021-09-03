@@ -3,27 +3,22 @@ clear;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GRADIENT LAB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-file_raw = 'finger';
-row=180; col=80;
-
 file_raw = 'edge';
 row=256; col=256;
 
 file_raw = 'cell';
 row=199; col=200;
 
-file_raw = 'Finger2030A';
-row=376; col=240;
-
-file_raw = 'lena';
-row=256; col=256;
 
 file_raw = 'virus';
 row=212; col=219;
 
 file_raw = '2object';
 row=320; col=240;
+
+file_raw = 'lena';
+row=256; col=256;
+
 %{
 N = 5;
 
@@ -83,22 +78,28 @@ return;
 tmp = file_raw;
 file_raw = append(tmp,'');
 fin=fopen(file_raw,'r');
-r=fread(fin,row*col,'uint8=>uint8'); 
+if (contains(file_raw,'16bitsGrayScale')) 
+    r=fread(fin,row*col,'uint16=>uint8'); 
+else
+    r=fread(fin,row*col,'uint8=>uint8'); 
+end
 r=reshape(r,row,col);
 r=r';
 r = imgaussfilt(r,2);
 fclose(fin);
-show(r, file_raw, row, col);
+show(r, 'imgaussfilt', row, col);
 %return;
 %
-
-
 
 %raw data
 tmp = file_raw;
 file_raw_gaussian = append(tmp,'Gaussianed');
 fin=fopen(file_raw_gaussian,'r');
-Raw=fread(fin,row*col,'uint8=>uint8'); 
+if (contains(file_raw_gaussian,'16bitsGrayScale')) 
+    Raw=fread(fin,row*col,'uint8=>uint8'); 
+else
+    Raw=fread(fin,row*col,'uint8=>uint8'); 
+end
 Raw=reshape(Raw,row,col);
 Raw=Raw';
 fclose(fin);

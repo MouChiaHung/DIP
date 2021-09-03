@@ -1,15 +1,22 @@
-clear all;
+clear;
 close all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FFT LAB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-row=80; col=80;
+row=79; col=79;
 
+file_name = 'lena';
+row_pgm=256; col_pgm=256;
 %
 %raw data
-file_raw = 'finger.raw';
+file_raw = append(file_name,'_im_DftIDft.raw');
 fin=fopen(file_raw,'r');
-R=fread(fin,row*col,'uint8=>uint8'); 
+if (contains(file_name,'16bitsGrayScale')) 
+    R=fread(fin,row*col,'uint16=>uint8'); 
+else
+    R=fread(fin,row*col,'uint8=>uint8'); 
+end
+
 ZRaw=reshape(R,row,col);
 ZRaw=ZRaw';
 fclose(fin);
@@ -19,7 +26,7 @@ imshow(ZRaw);
 title('Raw data')
 
 %DFT of raw data
-file_raw = 'fingerSpec.raw';
+file_raw = append(file_name,'Spec.raw');
 fin=fopen(file_raw,'r');
 spec=fread(fin,row*col,'double'); 
 S=(spec);
@@ -27,24 +34,36 @@ S=reshape(S,row,col);
 S=S';
 S = fftshift(S);
 fclose(fin);
-subplot(4,2,3);
+subplot(4,2,2);
 imshow(log(abs(S)), []);
 title('DFT of raw data');
 
 %DFT and IDFT
-file_raw = 'fingerIft.raw';
+file_raw = append(file_name,'IDFT_FromComplexReal.raw');
 fin=fopen(file_raw,'r');
-IFT=fread(fin,row*col,'uint8=>uint8'); 
-ZIFT=reshape(IFT,row,col);
-ZIFT=ZIFT';
+IFT_real =fread(fin,row*col,'uint8=>uint8'); 
+ZIFT_real=reshape(IFT_real,row,col);
+ZIFT_real=ZIFT_real';
+fclose(fin);
+subplot(4,2,3);
+imshow(ZIFT_real);
+%surf(ZIFT_real);
+title('DFT and IDFT from complex real by C++')
+
+file_raw = append(file_name,'IDFT_FromComplexImag.raw');
+fin=fopen(file_raw,'r');
+IFT_imag=fread(fin,row*col,'uint8=>uint8'); 
+ZIFT_imag=reshape(IFT_imag,row,col);
+ZIFT_imag=ZIFT_imag';
 fclose(fin);
 subplot(4,2,4);
-imshow(ZIFT);
-%surf(ZIFT);
-title('DFT and IDFT by C++')
+imshow(ZIFT_imag);
+%surf(ZIFT_imag);
+title('DFT and IDFT from complex imag by C++')
+
 
 %DFT of output
-file_raw = 'fingerSpecLP.raw';
+file_raw = append(file_name,'SpecLP.raw');
 fin=fopen(file_raw,'r');
 specLP=fread(fin,row*col,'double'); 
 SLP=(specLP);
@@ -57,7 +76,7 @@ imshow(log(abs(SLP)), []);
 title('DFT of output filtered by boxing low pass');
 
 %output filtered by low pass
-file_raw = 'fingerIftLP.raw';
+file_raw = append(file_name,'IDFTLP.raw');
 fin=fopen(file_raw,'r');
 IFTLP=fread(fin,row*col,'uint8=>uint8'); 
 ZIFTLP=reshape(IFTLP,row,col);
@@ -69,22 +88,34 @@ imshow(ZIFTLP);
 title('Output filtered by boxing low pass'); 
 
 %pgm.raw
-file_raw = 'fingerFiltered';
+row_pgm = 255;
+col_pgm = 255;
+file_raw = append(file_name,'Filtered');
 fin=fopen(file_raw,'r');
-Filtered=fread(fin,180*80,'uint8=>uint8');
-Filtered=reshape(Filtered,180,80);
+Filtered=fread(fin,row_pgm*col_pgm,'uint8=>uint8');
+Filtered=reshape(Filtered,row_pgm,col_pgm);
 Filtered=Filtered';
-Filtered=imcrop(Filtered,[50 1 80 80]);
+%Filtered=imcrop(Filtered,[40 0 120 79]);
 fclose(fin);
 subplot(4,2,8);
 imshow(Filtered);
-title('Output filtered by Gaussian low pass');
+title('Output filtered by my fileter');
 
 FFiltered = fft2(Filtered);
 FFiltered = fftshift(FFiltered);
 subplot(4,2,7);
-imshow(log(abs(FFiltered))/(80*80), []);
-title('DFT of output filtered by Gaussian low pass');
+%imshow(log(abs(FFiltered))/(80*80), []);
+imshow(log(abs(FFiltered)), []);
+title('DFT of output filtered by my fileter');
+
+figure('Name','raw','NumberTitle','off');
+imshow(ZRaw);
+figure('Name','real','NumberTitle','off');
+imshow(ZIFT_real);
+figure('Name','imag','NumberTitle','off');
+imshow(ZIFT_imag);
+figure('Name','real+imag','NumberTitle','off');
+imshow(ZIFT_imag/2+ZIFT_real/2);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FUNDAMETAL LAB
@@ -196,7 +227,7 @@ imwrite((im5), 'im.tif');
 
 %{
 figure('Name','im','NumberTitle','off');
-im5 = (imread('finger.tif'));
+im5 = (imread('xxx.tif'));
 imshow(im5);
 IM5 = fft2(im5);
 IM5_real = real(IM5);

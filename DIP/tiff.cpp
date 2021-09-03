@@ -3,7 +3,7 @@
 	*******************************************************************************/
 #include "tiff.h"
 #include "dft.h"
-using namespace std;
+//using namespace std;
 
 	/******************************************************************************
 	**                      DEFINE
@@ -820,7 +820,7 @@ bool Tiff::dft_idft(int m_, int n_) {
 		img[i] = (double)im[i];
 	}
 	printf("DFT...\n");
-	dft.dft2(img, m, n);
+	dft.dft2(NULL, img, m, n);
 
 	printf("SPCTRUM...\n");
 	double* spec = NULL;
@@ -852,7 +852,7 @@ bool Tiff::dft_idft(int m_, int n_) {
 
 	printf("IDFT...\n");
 	double *output_idft = NULL;
-	dft.idft2(output_idft, &w, &h);
+	dft.idft2(output_idft, &w, &h, true);
 	uint8_t* output = new uint8_t[l];
 	if (output == NULL || output_idft == NULL)
 		return false;
@@ -986,7 +986,7 @@ bool Tiff::low_pass(int m_, int n_, int window) {
 		img[i] = (double)im[i];
 	}
 	printf("DFT...\n");
-	dft.dft2(img, m, n);
+	dft.dft2(NULL, img, m, n);
 
 	//low pass - clear if out of window
 	printf("Filtering...\n");
@@ -1020,7 +1020,7 @@ bool Tiff::low_pass(int m_, int n_, int window) {
 
 	printf("IDFT...\n");
 	double *output_idft = NULL;
-	dft.idft2(output_idft, &w, &h);
+	dft.idft2(output_idft, &w, &h, true);
 	uint8_t* output = new uint8_t[l];
 	if (output == NULL || output_idft == NULL)
 		return false;
@@ -1140,7 +1140,7 @@ bool Tiff::low_pass_eff(int m_, int n_, int window) {
 		img[i] = (double)im[i];
 	}
 	printf("DFT...\n");
-	dft.dft2(img, m, n, (double)window);
+	dft.dft2(NULL, img, m, n, (double)window);
 
 	printf("SPCTRUM...\n");
 	double* spec = NULL;

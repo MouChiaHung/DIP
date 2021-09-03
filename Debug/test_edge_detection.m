@@ -24,7 +24,7 @@ plot(n,x);
 title('x');
 subplot(3,2,3);
 plot(n_diff,x_diff);
-title('x' ');
+title('x');
 subplot(3,2,5);
 plot(n_diff2,x_diff2);
 title('x"');

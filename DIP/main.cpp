@@ -11,6 +11,7 @@
 #include "conio.h"
 #include "tiff.h"
 #include "dft.h"
+#include "dct.h"
 #include "filter.h"
 #include <time.h>  
 #include "pgm.h"
@@ -19,21 +20,22 @@ using namespace std;
 	/******************************************************************************
 	**                      DEFINE
 	*******************************************************************************/
-#define Blue 1
-#define Green 2
-#define Cyan 3
-#define Red 4
-#define Purple 5
-#define Yellow_Dark 6
-#define White_Default 7
-#define Gray 8
-#define Bright_Blue 9
-#define Brigth_Green 10
-#define Bright_Cyan 11
-#define Bright_Red 12
-#define Pink 13
-#define Yellow 14
-#define Bright_White 15
+#define LOG(xx_fmt, ...) debug_print(__func__, xx_fmt,  ##__VA_ARGS__)
+
+#define USE_PGM  1
+#define USE_TIFF 0
+
+#define RUN_UNIT_TEST     0
+#define RUN_HIST          1
+#define RUN_FILTERING     0
+#define RUN_GRADIENT      0
+#define RUN_DFT_AND_IDFT  0
+#define RUN_BOX_FILTER    0
+#define RUN_FILTER_BY_DFT 1
+#define RUN_FILTER_BY_DCT 0
+#define RUN_DECONV_BY_DFT 0
+#define RUN_DECONV_BY_DCT 0
+#define RUN_DCT_AND_IDCT  0
 
 	/******************************************************************************
 	**                      GLOBAL VARIABLE
@@ -47,117 +49,36 @@ bool print_bit_plane(uint8_t* src, int w, int h);
 	/******************************************************************************
 	**                      DECLARATION OF FUNCTION
 	*******************************************************************************/
+static void debug_print(const char* func, char const* const xx_fmt, ...) {
+	char buf_print[256] = "";
+	int  pos_print = 0;
+	va_list args;
+	va_start(args, xx_fmt);
+	sprintf(buf_print, "[%s][%s]", "MAIN", func);
+	pos_print = strlen(buf_print);
+	vsprintf(buf_print+pos_print, xx_fmt, args);
+	printf(buf_print);
+	va_end(args);
+}
 
 	/******************************************************************************
 	**                      IMPLEMENTATION FOR UTIL
 	*******************************************************************************/
-#define WHEREARG  __func__
-#define LOG(...) debug_print_impl(WHEREARG, ##__VA_ARGS__)
-#define LOGV(...) debug_print_verbose_impl(WHEREARG, ##__VA_ARGS__)
-#define LOGD(...) debug_print_debug_impl(WHEREARG, ##__VA_ARGS__)
-#define LOGE(...) debug_print_error_impl(WHEREARG, ##__VA_ARGS__)
-#ifdef NO_LOG
-#define printf(...) debug_print_impl(WHEREARG, ##__VA_ARGS__)
-#endif
-	void debug_print_impl(const char* func, _Printf_format_string_ char const* const _Format, ...) {
-#ifdef NO_LOG
-		return;
-#endif 
-		setbuf(stdout, NULL);
-		va_list args;
-		va_start(args, _Format);
-		char db_buf[128];
-		sprintf(db_buf, "[%s]", func);
-		int db_len = 0;
-		db_len = strlen(db_buf);
-		vsprintf(db_buf + db_len, _Format, args);
-		printf(db_buf);
-		va_end(args);
-
-#ifdef EXPORT_LOG
-		FILE* file = fopen("log.txt", "a+");
-		fputs(db_buf, file);
-		fclose(file);
-#endif
-	}
-
-	void debug_print_verbose_impl(const char* func, _Printf_format_string_ char const* const _Format, ...) {
-#ifdef NO_LOG
-		//return;
-#endif 
-		setbuf(stdout, NULL);
-		va_list args;
-		va_start(args, _Format);
-		char db_buf[128] = "";
-		sprintf(db_buf, "");
-		int db_len = 0;
-		db_len = strlen(db_buf);
-		vsprintf(db_buf + db_len, _Format, args);
-		printf(db_buf);
-		va_end(args);
-
-#ifdef EXPORT_LOG
-		FILE* file = fopen("log.txt", "a+");
-		fputs(db_buf, file);
-		fclose(file);
-#endif
-	}
-
-	void debug_print_debug_impl(const char* func, _Printf_format_string_ char const* const _Format, ...) {
-		setbuf(stdout, NULL);
-		va_list args;
-		va_start(args, _Format);
-		char db_buf[128];
-		sprintf(db_buf, "[%s]", func);
-		int db_len = 0;
-		db_len = strlen(db_buf);
-		vsprintf(db_buf + db_len, _Format, args);
-		std::cout << (db_buf) << std::endl;
-		va_end(args);
-
-#ifdef EXPORT_LOG
-		FILE* file = fopen("log.txt", "a+");
-		fputs(db_buf, file);
-		fclose(file);
-#endif
-	}
-
-	void debug_print_error_impl(const char* func, _Printf_format_string_ char const* const _Format, ...) {
-#ifdef NO_LOG
-		return;
-#endif 
-		setbuf(stdout, NULL);
-		va_list args;
-		va_start(args, _Format);
-		char db_buf[128];
-		sprintf(db_buf, "[%s]", func);
-		int db_len = 0;
-		db_len = strlen(db_buf);
-		vsprintf(db_buf + db_len, _Format, args);
-		printf(db_buf);
-		va_end(args);
-
-#ifdef EXPORT_LOG
-		FILE* file = fopen("log.txt", "a+");
-		fputs(db_buf, file);
-		fclose(file);
-#endif
-	}
 
 ostream& Foo(ostream &stream) {
-	stream << "-*-*-*-*- Hello Digital Image Processing -*-*-*-*-\n" << endl;
+	stream << "-*-*-*-*- Hello Digital Image Processing -*-*-*-*-\n" << std::endl;
 	return stream;
 }
 
 ostream& Qoo(ostream &stream) {
-	stream << "\n-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-" << endl;
+	stream << "\n-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-" << std::endl;
 	return stream;
 }
 
 void byte_swap_uint8_data(uint16_t* data, int w) {
 	if (w < 2) return;
 	if (w%2 != 0) {
-		cout << "byte swap window is odd" << endl;
+		std::cout << "byte swap window is odd" << std::endl;
 	}
 
 	for (int i=0; i<w/2; i++) {
@@ -211,7 +132,7 @@ bool print_bit_plane(uint8_t* src, int w, int h) {
 	remove(file_name_raw.c_str());
 	fos_0.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
 	if (fos_0.fail()) {
-		printf("%s\n", strerror(errno));
+		LOG("%s\n", strerror(errno));
 		return false;
 	}
 	else fos_0.clear();
@@ -227,7 +148,7 @@ bool print_bit_plane(uint8_t* src, int w, int h) {
 	remove(file_name_raw.c_str());
 	fos_1.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
 	if (fos_1.fail()) {
-		printf("%s\n", strerror(errno));
+		LOG("%s\n", strerror(errno));
 		return false;
 	}
 	else fos_1.clear();
@@ -243,7 +164,7 @@ bool print_bit_plane(uint8_t* src, int w, int h) {
 	remove(file_name_raw.c_str());
 	fos_2.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
 	if (fos_2.fail()) {
-		printf("%s\n", strerror(errno));
+		LOG("%s\n", strerror(errno));
 		return false;
 	}
 	else fos_2.clear();
@@ -259,7 +180,7 @@ bool print_bit_plane(uint8_t* src, int w, int h) {
 	remove(file_name_raw.c_str());
 	fos_3.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
 	if (fos_3.fail()) {
-		printf("%s\n", strerror(errno));
+		LOG("%s\n", strerror(errno));
 		return false;
 	}
 	else fos_3.clear();
@@ -275,7 +196,7 @@ bool print_bit_plane(uint8_t* src, int w, int h) {
 	remove(file_name_raw.c_str());
 	fos_4.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
 	if (fos_4.fail()) {
-		printf("%s\n", strerror(errno));
+		LOG("%s\n", strerror(errno));
 		return false;
 	}
 	else fos_4.clear();
@@ -291,7 +212,7 @@ bool print_bit_plane(uint8_t* src, int w, int h) {
 	remove(file_name_raw.c_str());
 	fos_5.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
 	if (fos_5.fail()) {
-		printf("%s\n", strerror(errno));
+		LOG("%s\n", strerror(errno));
 		return false;
 	}
 	else fos_5.clear();
@@ -307,7 +228,7 @@ bool print_bit_plane(uint8_t* src, int w, int h) {
 	remove(file_name_raw.c_str());
 	fos_6.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
 	if (fos_6.fail()) {
-		printf("%s\n", strerror(errno));
+		LOG("%s\n", strerror(errno));
 		return false;
 	}
 	else fos_6.clear();
@@ -323,7 +244,7 @@ bool print_bit_plane(uint8_t* src, int w, int h) {
 	remove(file_name_raw.c_str());
 	fos_7.open(file_name_raw, fstream::in | fstream::out | fstream::trunc | fstream::binary);
 	if (fos_7.fail()) {
-		printf("%s\n", strerror(errno));
+		LOG("%s\n", strerror(errno));
 		return false;
 	}
 	else fos_7.clear();
@@ -354,16 +275,17 @@ int main()
 	struct tm * timeinfo;
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	printf("start time:%s", asctime(timeinfo) );
-#if 0 //test
-#if 0 //previous test
+	LOG("start time:%s", asctime(timeinfo) );
+
+#if RUN_UNIT_TEST //test
+#if 0 //atomic test
 	complex<double> c1(2, 1);
-	printf("c1:%f+i%f\n", real(c1), imag(c1));
+	LOG("c1:%f+i%f\n", real(c1), imag(c1));
 	complex<double> c2(1, 4);
-	printf("c2:%f+i%f\n", real(c2), imag(c2));
+	LOG("c2:%f+i%f\n", real(c2), imag(c2));
 	//complex<double> c3(real(c1)+real(c2), imag(c1)+imag(c2));
 	complex<double> c3 = c1*c2;
-	printf("c3:%f+i%f\n", real(c3), imag(c3));
+	LOG("c3:%f+i%f\n", real(c3), imag(c3));
 	uint8_t tmp[9] = {0x0};
 	for (int i=9-1; i>=0 ; i--) *(tmp+i) = 0xff-i;
 	uint16_t tmp2[9];
@@ -373,34 +295,578 @@ int main()
 	//uint64_t d1 = 0x12345678;
 	double d1 = -10.5;
 	uint8_t* pc = (uint8_t*)&d1;
-	printf("sizeof(double):%d\n", sizeof(double));
-	printf("sizeof(d1):%d\n", sizeof(d1));
-	printf("d1:%lf\n", d1);
+	LOG("sizeof(double):%d\n", sizeof(double));
+	LOG("sizeof(d1):%d\n", sizeof(d1));
+	LOG("d1:%lf\n", d1);
 	for (int i=0; i<sizeof(d1); i++)
-		printf("[%x]", *(pc+i));
-	printf("\n");
+		LOG("[%x]", *(pc+i));
+	LOG("\n");
 #endif
-#if 1 //DFT test
+
+#if 0 //normalization
+
+	Filter f;
+	double data[7] = {10,11,234,45,65,456,0};
+	double* norm = NULL;
+	f.normalize(norm, data, 7, 1, 0.0, 1.0);
+	return 0;
+#endif 
+
+#if 0 //Cutoff and zeroPadding test
+	
+	int w = 8;
+	int h = 4;
+	double *im = (double*)malloc(sizeof(double)*w*h);
+
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			im[i+j*w] = ((double)i+(double)j*(double)w);
+		}
+	}
+
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			LOG("[%.1f]", im[i+j*w]);
+			if (!((i+1)%w)) LOG("\n");
+		}
+	}
+
+	LOG("Cut off...\n");
+	Filter f;
+	double* im_cutoff = NULL;
+	int w_cutoff = 0;
+	int h_cutoff = 0;
+	f.cutoff(im_cutoff, im, w, h, 1, 1, &w_cutoff, &h_cutoff);
+	
+	for (int j=0; j<h_cutoff; j++) {
+		for (int i=0; i<w_cutoff; i++) {
+			LOG("[%.1f]", im_cutoff[i+j*w_cutoff]);
+			if (!((i+1)%w_cutoff)) LOG("\n");
+		}
+	}
+
+	LOG("Zero padding...\n");
+	double* im_padded = NULL;
+	int w_padded = 0;
+	int h_padded = 0;
+	f.zeroPadding(im_padded, im_cutoff, w_cutoff, h_cutoff, 1, 1, &w_padded, &h_padded);
+	
+	for (int j=0; j<h_padded; j++) {
+		for (int i=0; i<w_padded; i++) {
+			LOG("[%.1f]", im_padded[i+j*w_padded]);
+			if (!((i+1)%w_padded)) LOG("\n");
+		}
+	}
+
+
+
+	if (im)
+		free(im);
+	if (im_cutoff)
+		free(im_cutoff);
+	if (im_padded)
+		free(im_padded);
+	return 0;
+#endif
+
+#if 0 //Rotate test
+	
+	int w = 8;
+	int h = 4;
+	uint8_t *im = (uint8_t*)malloc(sizeof(uint8_t)*w*h);
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			im[i+j*w] = (i+j*w);
+		}
+	}
+
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			LOG("[%2x]", im[i+j*w]);
+			if (!((i+1)%w)) LOG("\n");
+		}
+	}
+
+	LOG("Rotate...\n");
+	Filter f;
+	uint8_t* im_rot = NULL;
+	int w_rot = 0;
+	int h_rot = 0;
+	f.rotate90(im_rot, im, w, h, &w_rot, &h_rot);
+	
+	for (int j=0; j<h_rot; j++) {
+		for (int i=0; i<w_rot; i++) {
+			LOG("[%2x]", im_rot[i+j*w_rot]);
+			if (!((i+1)%w_rot)) LOG("\n");
+		}
+	}
+
+	if (im)
+		free(im);
+	if (im_rot)
+		free(im_rot);
+	return 0;
+#endif
+
+#if 1 //Copy
+	int w = 3;
+	int h = 3;
+	double *im = (double*)malloc(sizeof(double)*w*h);
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			im[i+j*w] = floor(((i+1)+j*w)%(9)+0.6);
+		}
+	}
+
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			LOG("[%.f]", im[i+j*w]);
+			if (!((i+1)%w)) LOG("\n");
+		}
+	}
+
+	LOG("Copy...\n");
+	Filter f;
+	int w_dst = w * 2;
+	int h_dst = h * 2;
+
+	int rf_dst = 0;
+	int rt_dst = 0;
+	int rs_dst = 0;
+	int cf_dst = 0;
+	int ct_dst = 0;
+	int cs_dst = 0;
+
+	int rf_src = 0;
+	int rt_src = 0;
+	int rs_src = 0;
+	int cf_src = 0;
+	int ct_src = 0;
+	int cs_src = 0;
+	double *dst = (double*)malloc(sizeof(double)*w_dst*h_dst);
+	if (!dst) return 0;
+	memset(dst, 0, sizeof(double)*w_dst*h_dst);
+
+	//Copy [u, v]
+    rf_dst = 0;
+	rt_dst = w_dst-1;
+	rs_dst = 1;
+	cf_dst = 0;
+	ct_dst = h_dst-1;
+	cs_dst = 1;
+
+	rf_src = 0;
+	rt_src = w-1;
+	rs_src = 1;
+	cf_src = 0;
+	ct_src = h-1;
+	cs_src = 1;
+
+	LOG("Copy src[%d:%d:%d][%d:%d:%d] to dst[%d:%d:%d][%d:%d:%d]\n"
+		, rf_src, rs_src, rt_src, cf_src, cs_src, ct_src
+		, rf_dst, rs_dst, rt_dst, cf_dst, cs_dst, ct_dst);
+	f.copy(dst, w_dst, rf_dst, rt_dst, rs_dst, cf_dst, ct_dst, cs_dst, im, w, rf_src, rt_src, rs_src, cf_src, ct_src, cs_src);
+	
+	for (int j=0; j<h_dst; j++) {
+		for (int i=0; i<w_dst; i++) {
+			LOG("[%.f]", dst[i+j*w_dst]);
+			if (!((i+1)%w_dst)) LOG("\n");
+		}
+	}
+
+	//Copy [-u, v]
+    rf_dst = w_dst-1;
+	rt_dst = 0;
+	rs_dst = -1;
+	cf_dst = 0;
+	ct_dst = h_dst-1;
+	cs_dst = 1;
+
+	rf_src = 0;
+	rt_src = w-1;
+	rs_src = 1;
+	cf_src = 0;
+	ct_src = h-1;
+	cs_src = 1;
+
+	LOG("Copy src[%d:%d:%d][%d:%d:%d] to dst[%d:%d:%d][%d:%d:%d]\n"
+		, rf_src, rs_src, rt_src, cf_src, cs_src, ct_src
+		, rf_dst, rs_dst, rt_dst, cf_dst, cs_dst, ct_dst);
+	f.copy(dst, w_dst, rf_dst, rt_dst, rs_dst, cf_dst, ct_dst, cs_dst, im, w, rf_src, rt_src, rs_src, cf_src, ct_src, cs_src);
+	
+	for (int j=0; j<h_dst; j++) {
+		for (int i=0; i<w_dst; i++) {
+			LOG("[%.f]", dst[i+j*w_dst]);
+			if (!((i+1)%w_dst)) LOG("\n");
+		}
+	}
+
+	//Copy [u, -v]
+    rf_dst = 0;
+	rt_dst = w_dst-1;
+	rs_dst = 1;
+	cf_dst = h_dst-1;
+	ct_dst = 0;
+	cs_dst = -1;
+
+	rf_src = 0;
+	rt_src = w-1;
+	rs_src = 1;
+	cf_src = 0;
+	ct_src = h-1;
+	cs_src = 1;
+
+	LOG("Copy src[%d:%d:%d][%d:%d:%d] to dst[%d:%d:%d][%d:%d:%d]\n"
+		, rf_src, rs_src, rt_src, cf_src, cs_src, ct_src
+		, rf_dst, rs_dst, rt_dst, cf_dst, cs_dst, ct_dst);
+	f.copy(dst, w_dst, rf_dst, rt_dst, rs_dst, cf_dst, ct_dst, cs_dst, im, w, rf_src, rt_src, rs_src, cf_src, ct_src, cs_src);
+	
+	for (int j=0; j<h_dst; j++) {
+		for (int i=0; i<w_dst; i++) {
+			LOG("[%.f]", dst[i+j*w_dst]);
+			if (!((i+1)%w_dst)) LOG("\n");
+		}
+	}
+
+	//Copy [-u, -v]
+    rf_dst = w_dst-1;
+	rt_dst = 0;
+	rs_dst = -1;
+	cf_dst = h_dst-1;
+	ct_dst = 0;
+	cs_dst = -1;
+
+	rf_src = 0;
+	rt_src = w-1;
+	rs_src = 1;
+	cf_src = 0;
+	ct_src = h-1;
+	cs_src = 1;
+
+	LOG("Copy src[%d:%d:%d][%d:%d:%d] to dst[%d:%d:%d][%d:%d:%d]\n"
+		, rf_src, rs_src, rt_src, cf_src, cs_src, ct_src
+		, rf_dst, rs_dst, rt_dst, cf_dst, cs_dst, ct_dst);
+	f.copy(dst, w_dst, rf_dst, rt_dst, rs_dst, cf_dst, ct_dst, cs_dst, im, w, rf_src, rt_src, rs_src, cf_src, ct_src, cs_src);
+	
+	for (int j=0; j<h_dst; j++) {
+		for (int i=0; i<w_dst; i++) {
+			LOG("[%.f]", dst[i+j*w_dst]);
+			if (!((i+1)%w_dst)) LOG("\n");
+		}
+	}
+
+	LOG("Copy center around from big to small...\n");
+	int w_dst_cent = w * 1;
+	int h_dst_cent = h * 1;
+	double *dst_cent = (double*)malloc(sizeof(double)*w_dst_cent*h_dst_cent);
+	if (!dst_cent) 
+		return 0;
+	memset(dst_cent, 0, sizeof(double)*w_dst_cent*h_dst_cent);
+	LOG("Copy center around from [%d]x[%d] to [%d]x[%d]...\n", w_dst, h_dst, w_dst_cent,h_dst_cent);
+	f.copy_center_around(dst_cent, dst, w_dst_cent, h_dst_cent, w_dst, h_dst);
+	for (int j=0; j<h_dst_cent; j++) {
+		for (int i=0; i<w_dst_cent; i++) {
+			LOG("[%.f]", dst_cent[i+j*w_dst_cent]);
+			if (!((i+1)%w_dst_cent)) LOG("\n");
+		}
+	}
+
+	LOG("Copy center around from small to big...\n");
+	int w_dst_cent2 = w * 2 + 1;
+	int h_dst_cent2 = h * 2 + 1;
+	double* dst_cent2 = (double*)malloc(sizeof(double)*w_dst_cent2*h_dst_cent2);
+	if (!dst_cent2) 
+		return 0;
+	memset(dst_cent2, 0, sizeof(double)*w_dst_cent2*h_dst_cent2);
+	LOG("Copy center around from [%d]x[%d] to [%d]x[%d]...\n",w_dst_cent,h_dst_cent,w_dst_cent2,h_dst_cent2);
+	f.copy_center_around(dst_cent2, dst_cent, w_dst_cent2, h_dst_cent2, w_dst_cent, h_dst_cent);
+	for (int j=0; j<h_dst_cent2; j++) {
+		for (int i=0; i<w_dst_cent2; i++) {
+			LOG("[%.f]", dst_cent2[i+j*w_dst_cent2]);
+			if (!((i+1)%w_dst_cent2)) LOG("\n");
+		}
+	}
+
+	if (im)
+		free(im);
+	if (dst)
+		free(dst);
+	if (dst_cent)
+		free(dst_cent);
+	if (dst_cent2)
+		free(dst_cent2);	
+	return 0;
+#endif 
+
+#if 0 //Histogram equalization
+	int w = 4;
+	int h = 4;
+	double *im = (double*)malloc(sizeof(double)*w*h);
+	if (!im)
+		return 0;
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			im[i+j*w] = floor(((i+1)+j*w)%(8)+0.6);
+		}
+	}
+
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			LOG("[");
+			if (im[i+j*w] < 100) LOG(" ");
+			if (im[i+j*w] < 10) LOG(" ");
+			LOG("%.f]", im[i+j*w]);
+			if (!((i+1)%w)) LOG("\n");
+		}
+	}
+
+	LOG("Hitogram equalization...\n");
+	Filter f;
+	f.histogram_equalization(im, w*h);
+
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			LOG("[");
+			if (im[i+j*w] < 100) LOG(" ");
+			if (im[i+j*w] < 10) LOG(" ");
+			LOG("%.f]", im[i+j*w]);
+			
+			if (!((i+1)%w)) LOG("\n");
+		}
+	}
+
+	if (im)
+		free(im);
+
+#endif
+
+#if 0 //Element-wise complex multiply
+	int w = 2;
+	int h = 2;
+	double *im_re = (double*)malloc(sizeof(double)*w*h);
+	double *im_im = (double*)malloc(sizeof(double)*w*h);
+	double *h_re = (double*)malloc(sizeof(double)*w*h);
+	double *h_im = (double*)malloc(sizeof(double)*w*h);
+	if (!im_re || !im_im)
+		return 0;
+	LOG("Real of image...\n");
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			im_re[i+j*w] = floor(((i+1)+j*w)%(8)+0.6);
+		}
+	}
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			LOG("[");
+			if (im_re[i+j*w] < 100) LOG(" ");
+			if (im_re[i+j*w] < 10) LOG(" ");
+			LOG("%.f]", im_re[i+j*w]);
+			if (!((i+1)%w)) LOG("\n");
+		}
+	}
+	LOG("Imaginary of image...\n");
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			im_im[i+j*w] = floor(((i+1)+j*w)%(8)+0.6);
+		}
+	}
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			LOG("[");
+			if (im_im[i+j*w] < 100) LOG(" ");
+			if (im_im[i+j*w] < 10) LOG(" ");
+			LOG("%.f]", im_im[i+j*w]);
+			if (!((i+1)%w)) LOG("\n");
+		}
+	}
+	LOG("Real of kernel...\n");
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			h_re[i+j*w] = floor(((i+1)+j*w)%(8)+0.6);
+		}
+	}
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			LOG("[");
+			if (h_re[i+j*w] < 100) LOG(" ");
+			if (h_re[i+j*w] < 10) LOG(" ");
+			LOG("%.f]", h_re[i+j*w]);
+			if (!((i+1)%w)) LOG("\n");
+		}
+	}
+	LOG("Imaginary of kernel...\n");
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			h_im[i+j*w] = floor(((j+1)+j*w)%(8)+0.6);
+		}
+	}
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			LOG("[");
+			if (h_im[i+j*w] < 100) LOG(" ");
+			if (h_im[i+j*w] < 10) LOG(" ");
+			LOG("%.f]", h_im[i+j*w]);
+			if (!((i+1)%w)) LOG("\n");
+		}
+	}
+
+	LOG("Element-wise complex multiply...\n");
+	Filter f;
+	//double *y_re = (double*)malloc(sizeof(double)*w*h);
+	//double *y_im = (double*)malloc(sizeof(double)*w*h);
+	double *y_re = NULL;
+	double *y_im = NULL;
+	f.element_wise_complex_multiply(&y_re, &y_im, im_re, im_im, h_re, h_im, w, h);
+	
+	LOG("Real of output...\n");
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			LOG("[");
+			if (y_re[i+j*w] < 100) LOG(" ");
+			if (y_re[i+j*w] < 10) LOG(" ");
+			LOG("%.f]", y_re[i+j*w]);
+			if (!((i+1)%w)) LOG("\n");
+		}
+	}
+	LOG("Imaginary of output...\n");
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			LOG("[");
+			if (y_im[i+j*w] < 100) LOG(" ");
+			if (y_im[i+j*w] < 10) LOG(" ");
+			LOG("%.f]", y_im[i+j*w]);
+			if (!((i+1)%w)) LOG("\n");
+		}
+	}
+
+	LOG("Check...\n");
+	complex<double>* ans = (complex<double>*)malloc(sizeof(complex<double>)*w*h);
+	if (!ans)
+		return false;
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			ans[i+j*w] = complex<double>(im_re[i+j*w],im_im[i+j*w])*complex<double>(h_re[i+j*w],h_im[i+j*w]);
+		}
+	}
+	LOG("Check real...\n");
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			LOG("[");
+			if (ans[i+j*w]._Val[0] < 100) LOG(" ");
+			if (ans[i+j*w]._Val[0] < 10) LOG(" ");
+			LOG("%.f]", ans[i+j*w]._Val[0]);
+			if (!((i+1)%w)) LOG("\n");
+		}
+	}
+	LOG("Check imaginary...\n");
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			LOG("[");
+			if (ans[i+j*w]._Val[1] < 100) LOG(" ");
+			if (ans[i+j*w]._Val[1] < 10) LOG(" ");
+			LOG("%.f]", ans[i+j*w]._Val[1]);
+			if (!((i+1)%w)) LOG("\n");
+		}
+	}
+
+
+	if (y_re)
+		free(y_re);
+	if (y_im)
+		free(y_im);
+	if (im_re)
+		free(im_re);
+	if (im_im)
+		free(im_im);
+	if (h_re)
+		free(h_re);
+	if (h_im)
+		free(h_im);
+	return 0;
+#endif
+
+
+#if 0 //DFT test
 	DFT dft;
 	int width = 4;
 	int height = 3;
 	double mat[] = { 1, 1, 3, 2, 3, 4, 123, 154, 55, 2, 22, 233 };
-	dft.dft2(mat, 4, 3);
+	dft.dft2(NULL, mat, 4, 3);
 	double* image = NULL;
 	double* spec = NULL;
 	double w;
 	double h;
 	dft.spectrum(spec, &w, &h, true);
 	dft.fftshift(spec, (int)w, (int)h);
-	dft.idft2(image, &w, &h);
+	dft.idft2(dft.matrix, &w, &h, true);
+#endif
 
+#if 0 //DCT test
+	DCT dct;
+#if 0
+	int width    = 4;
+	int height   = 4;
+	double mat[] = {
+					1,2,3,4, 
+					5,6,7,8,
+					9,10,9,8,
+					7,6,5,4
+					};
+#else
+	int width    = 8;
+	int height   = 8;
+	double mat[] = {
+					16, 11, 10, 16, 24, 40, 51, 61,
+					12, 12, 14, 19, 26, 58, 60, 55,
+					14, 13, 16, 24, 40, 57, 69, 56,
+					14, 17, 22, 29, 51, 87, 80, 82,
+					18, 22, 37, 56, 68, 109, 103, 77,
+					24, 35, 55, 64, 81, 104, 113, 92,
+					49, 64, 78, 87, 103, 121, 120, 101,
+					72, 92, 95, 98, 112, 100, 103, 99
+					};
+#endif
+	double* X = NULL;
+	LOG("--- source ---\n");
+	for (int j=0; j<height; j++) {
+		for (int i=0; i<width; i++) {
+			LOG("[");
+			if (mat[i+j*(int)width] < 100)  LOG(" ");
+			if (mat[i+j*(int)width] < 10)   LOG(" ");
+			LOG("%.1f]", mat[i+j*(int)width]);
+		}
+		LOG("\n");
+	}
+
+	LOG("\n******** Run DCT by all ********\n");
+	dct.dct2(&X, mat, width, height);
+	double* image = NULL;
+	double* spec = NULL;
+	double w;
+	double h;
+	//dct.spectrum(&spec, &w, &h, true);
+	dct.idct2(image, &w, &h);
+
+	LOG("\n******** Run DCT by group ********\n");
+	dct.dct2(&X, mat, width, height, width, 4);
+	double* image_run_by_group = NULL;
+	double* spec_run_by_group = NULL;
+	double w_run_by_group;
+	double h_run_by_group;
+	//dct.spectrum(&spec_run_by_group, &w_run_by_group, &h_run_by_group, true);
+	dct.idct2(image_run_by_group, &w_run_by_group, &h_run_by_group, 4);
+	return 0;
+#endif
+
+#if 0 //Conv test
+	Filter filter_conv;
 	double* dst_1 = NULL;
 	double src_1[3*2] = {1,2,3,4,5,6};
 	double kernel_1[2*2] = {1,1,1,1};
-	//dft.convolutionPadding(dst_1, src_1, kernel_1, 3, 2, 2);
+	filter_conv.convolutionZeroPadding(dst_1, src_1, kernel_1, 3, 2, 2);
 
 	double* dst2 = NULL;
-	double src2[5*6] = {25,100,75,49,130,
+	double src2[5*5] = {//25,100,75,49,130,
 						50,80,0,70,100,
 						5,10,20,30,0,
 						60,50,12,24,32,
@@ -410,54 +876,59 @@ int main()
 	double kernel2[3*3] = {1,0,1,
 						   0,1,0,
 						   0,0,1};
-	dft.convolution(dst2, src2, kernel2, 5, 6, 3);
-	dft.convolutionZeroPadding(dst2, src2, kernel2, 5, 6, 3);
+	filter_conv.convolution(dst2, src2, kernel2, 5, 5, 3);
+	filter_conv.convolutionZeroPadding(dst2, src2, kernel2, 5, 5, 3);
 
 	double* dst3 = NULL;
 	double src3[3*3] = {1,2,3,4,5,6,7,8,9};
 	double kernel3[3*3] = {-1,-2,-1,0,0,0,1,2,1};
-	//dft.convolution(dst3, src3, kernel3, 3, 3, 3);
-	//dft.convolutionZeroPadding(dst3, src3, kernel3, 3, 3, 3);
-
+	//dft_conv.convolution(dst3, src3, kernel3, 3, 3, 3);
+	//dft_conv.convolutionZeroPadding(dst3, src3, kernel3, 3, 3, 3);
+	system("pause");
 	return 0;
 #endif
 
 	return 0;
 #endif
-
-#if 1 //pgm test
+#if USE_PGM //pgm test
+	std::cout << "\
+*************************************\n\
+*                PGM                *\n\
+*************************************\n";
 	uint8_t* data_pgm = NULL;
 	int size_pgm = 0;
 	PGM pgm;
-	pgm.read("C:\\src\\amo\\DIP\\Debug\\2object.pgm", data_pgm, &size_pgm);
+	//pgm.read("C:\\src\\amo\\DIP\\Debug\\2object.pgm", data_pgm, &size_pgm);
 	//pgm.read("C:\\src\\amo\\DIP\\Debug\\lena.pgm", data_pgm, &size_pgm);
 	//pgm.read("C:\\src\\amo\\DIP\\Debug\\edge.pgm", data_pgm, &size_pgm);
 	//pgm.read("C:\\src\\amo\\DIP\\Debug\\cell.pgm", data_pgm, &size_pgm);
 	//pgm.read("C:\\src\\amo\\DIP\\Debug\\virus.pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\fingerAir.pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\finger.pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\Finger2030A.pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\finger_on_corner_1 .pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\finger_on_corner_2.pgm", data_pgm, &size_pgm);
 
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\GND_no_charge\\1605654090835.pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\GND_no_charge\\1605654093272.pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\GND_no_charge\\1605654094949.pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\GND_no_charge\\1605654096608.pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\GND_no_charge\\1605654098065.pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\No_GND_no_charge\\1605654214424.pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\No_GND_no_charge\\1605654215487.pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\No_GND_no_charge\\1605654216505.pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\No_GND_no_charge\\1605654217487.pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\No_GND_no_charge\\1605654218469.pgm", data_pgm, &size_pgm);
-
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\files\\gnd_charger_laptop.pgm", data_pgm, &size_pgm);
-	//pgm.read("C:\\src\\amo\\DIP\\Debug\\files\\finger_charger_laptop.pgm", data_pgm, &size_pgm);
-
-#if 0 //filtering
+#if RUN_HIST
+	std::cout << "\
+*******************************************\n\
+*                HITOGRAM EQUALIZATION     *\n\
+*******************************************\n";
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	printf("filtering() start time:%s", asctime(timeinfo) );
+	LOG("beg time:%s", asctime(timeinfo));
+
+	pgm.hist(NULL, true);
+
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	LOG("end time:%s", asctime(timeinfo));
+#endif
+
+
+#if RUN_FILTERING
+	std::cout << "\
+*************************************\n\
+*                FILTERING          *\n\
+*************************************\n";
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	LOG("filtering() start time:%s", asctime(timeinfo) );
 #if 0
 	double kernel[3*3] = { 0.1, 0.1, 0.1,
 						   0.1, 0.1, 0.1,
@@ -518,25 +989,28 @@ int main()
 	*/
 	double *kernel_Gaussian_conv_Laplacian = NULL;
 
-	Filter filter;
-	filter.convolution(kernel_Gaussian_conv_Laplacian, kernel_Gaussian, kernel_Laplacian_B, 3, 3, 3);
+	Filter filter_diy;
+	filter_diy.convolution(kernel_Gaussian_conv_Laplacian, kernel_Gaussian, kernel_Laplacian_B, 3, 3, 3);
 
 	//pgm.filtering(kernel, 3);
-	pgm.filtering(kernel_Laplacian_B, 3);
-	//pgm.filtering(kernel_Gaussian_conv_Laplacian, 3);
+	//pgm.filtering(kernel_Laplacian_B, 3);
+	pgm.filtering(kernel_Gaussian_conv_Laplacian, 3);
 	//pgm.filtering(kernel_LoG, 5);
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	printf("filtering() end   time:%s", asctime(timeinfo) );
+	LOG("filtering() end time:%s", asctime(timeinfo) );
 #endif
-
-#if 1
+#if RUN_GRADIENT
+	std::cout << "\
+*************************************\n\
+*                GRADIENT           *\n\
+*************************************\n";
 	if (pgm.raw == NULL) {
-		cout << "pgm has no raw!" << endl;
+		std::cout << "pgm has no raw!" << std::endl;
 		return 0;
 	} 
 
-	Filter filter;
+	Filter filter_gradient;
 	double* edged = NULL;
 	double* lap = NULL;
 	double* mag = NULL;
@@ -545,47 +1019,565 @@ int main()
 	double* src = new double[sizeof(double)*pgm.width*pgm.height];
 	for (int j=0; j<pgm.height; j++) {
 		for (int i=0; i<pgm.width; i++) {
-			src[i+j*pgm.width] = pgm.raw[i+j*pgm.width];
+			if (pgm.depth == 2) {
+				src[i+j*pgm.width] = ((uint16_t*)pgm.raw)[(i+j*pgm.width)];
+			}
+			else if (pgm.depth == 1) {
+				src[i+j*pgm.width] = ((uint8_t*)pgm.raw)[(i+j*pgm.width)];
+			} 
 		}
 	}
 
 	double* src_gaussianed = new double[sizeof(double)*pgm.width*pgm.height];
-	filter.gaussian(src_gaussianed, src, pgm.width, pgm.height, pgm.file);
-	//filter.sobel(edged, src, pgm.width, pgm.height, pgm.file);
-	filter.gradient(mag, ori, src, pgm.width, pgm.height, pgm.file);
-	filter.laplacian(lap, src, pgm.width, pgm.height, pgm.file);
+	filter_gradient.gaussian(src_gaussianed, src, pgm.width, pgm.height, pgm.file);
+	filter_gradient.sobel(edged, src, pgm.width, pgm.height, pgm.file);
+	filter_gradient.gradient(mag, ori, src, pgm.width, pgm.height, pgm.file);
+	filter_gradient.laplacian(lap, src, pgm.width, pgm.height, pgm.file);
+
+#endif
+#if RUN_DFT_AND_IDFT
+	std::cout << "\
+*************************************\n\
+*                DFT then IDFT      *\n\
+*************************************\n";
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	LOG("dft_idft() start time:%s", asctime(timeinfo) );
+	pgm.dft_idft(79, 79);
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	LOG("dft_idft() end time:%s", asctime(timeinfo) );
+#endif
+#if RUN_BOX_FILTER
+	std::cout << "\
+*************************************\n\
+*                BOX FILTER         *\n\
+*************************************\n";
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	LOG("low_pass_eff() start time:%s", asctime(timeinfo) );
+	pgm.low_pass_eff(79, 79, 16);
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	LOG("low_pass_eff() end time:%s", asctime(timeinfo) );
+#endif
+
+#if RUN_FILTER_BY_DFT
+	std::cout << "\
+*************************************\n\
+*                FILTERING BY DFT   *\n\
+*************************************\n";
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	LOG("start time:%s", asctime(timeinfo));
+	Filter filter;
+	int width_h        = 179; //odd size for no worry of conv aliasing due to centering
+	int height_h       = 79;
+	int dft_window = height_h/2;
+
+	double* kernel = NULL;
+	uint8_t* kernel_GrayScale = (uint8_t*)malloc(sizeof(uint8_t)*width_h*height_h);
+	int width_kernel  = 79; //odd size for no worry of conv aliasing due to centering
+	int height_kernel = 79;
+	bool is_H_shifted_to_center = true;
+	bool is_H_from_normalized   = true;
+	
+#if 1
+	int width_circle  = 16;
+	int height_circle = 16;
+	int radius_circle = 8;
+	if (is_H_shifted_to_center) {
+		width_circle = width_h;
+		height_circle = height_h;
+	}
+	if(!filter.circle(&kernel_GrayScale, &kernel, width_circle, height_circle, radius_circle
+		, dft_window, width_h, height_h, NULL, NULL, 0, is_H_from_normalized, false)) {
+		LOG("filter.circle failed\n");
+		return 0;
+	}
+#elif 1
+	double* table = (double*)malloc(sizeof(double)*width_h*1);
+	if (table == NULL)
+		return 0;
+	memset(table, 0, sizeof(double)*width_h*1);
+	double* kernel_meta = (double*)malloc(sizeof(double)*width_h*height_h);
+	if (kernel_meta == NULL)
+		return 0;
+	memset(kernel_meta, 0, sizeof(double)*width_h*height_h);
+	double x = 0;
+	double y = 0;
+	double d = 0;
+	double r = 0;
+	double phi = 0;
+	double dpm = 10;
+	double rmax = 0.6;
+	double freq = 5000;
+	double velocity = 3000;
+	int    ind = 0;
+	double length = (width_h>=height_h)?width_h:height_h;
+	for (int j=0; j<height_h; j++) {
+		for (int i=0; i<width_h; i++) {
+			x = ((double)i + 0.5f)/dpm;
+            y = ((double)j + 0.5f)/dpm;
+            r = sqrtf(x*x + y*y + d*d) + d;
+            if (r < rmax)
+            {
+                phi = -2.0f*PI*freq*r/velocity;
+                table[i] += cos(phi);
+			}
+		}
+	}
+	for (int j=0; j<height_h; j++) {
+		for (int i=0; i<width_h; i++) {
+			x = abs((width_h/2)-i);
+            y = abs((height_h/2)-j);
+            r = sqrtf(x*x + y*y);
+            ind = (int)floorf(r + 0.5f);
+            if (ind >= length)
+                ind = length-1;
+			kernel_meta[i+j*width_h] = table[ind];
+		}
+	}
+#if 1
+	Filter f_kernel_norm;
+	f_kernel_norm.normalize(kernel, kernel_meta, width_h, height_h, 0, 1, true);
+#else
+	kernel = (double*)malloc(sizeof(double)*width_h*height_h);
+	if (kernel == NULL)
+		return 0;
+	memset(kernel, 0, sizeof(double)*width_h*height_h);
+	memcpy(kernel, kernel_meta, sizeof(double)*width_h*height_h);
+#endif
+	ofstream fos;
+	try {
+		string file_name = "C:\\src\\amo\\DIP\\Debug\\table";
+		file_name += ".raw";
+		remove(file_name.c_str());
+		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+		if (fos.fail()) {
+			LOG("%s\n", strerror(errno));
+			return false;
+		}
+		else fos.clear();
+		fos.write((char*)table, sizeof(double)*(double)width_h*(double)1);
+		fos.close();
+		LOG("[%dx%d Table file]:%s\n", width_h, 1, file_name.c_str());
+
+		file_name = "C:\\src\\amo\\DIP\\Debug\\kernel_diy";
+		file_name += ".raw";
+		remove(file_name.c_str());
+		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+		if (fos.fail()) {
+			LOG("%s\n", strerror(errno));
+			return false;
+		}
+		else fos.clear();
+		fos.write((char*)kernel, sizeof(double)*(double)width_h*(double)height_h);
+		fos.close();
+		LOG("[%dx%d Kernel file]:%s\n", width_h, height_h, file_name.c_str());
+	}
+	catch (exception ex) {
+		return false;
+	}
+
+	if (kernel_meta)
+		free(kernel_meta);
+	if (table)
+		free(table);
+
+#else
+	int width_kernel_pgm = 1024;
+	int height_kernel_pgm = 512;
+	double* kernel_read = (double*)malloc(sizeof(double)*width_kernel_pgm*height_kernel_pgm);
+	kernel              = (double*)malloc(sizeof(double)*width_h*height_h);
+	ifstream fis;
+	string fn_h_im = "C:\\src\\amo\\DIP\\Debug\\h_re.bin";
+	fis.open(fn_h_im.c_str(), ios::in | ios::binary);
+	if (fis.fail()) {
+		LOG("%s\n", strerror(errno));
+		return false;
+	}
+	fis.seekg(0, ios::beg);
+	fis.read((char*)kernel_read,sizeof(double)*(double)width_kernel_pgm*(double)height_kernel_pgm);
+	LOG("Read kernel from:%s\n", fn_h_im.c_str());
+
+	Filter f_ken_pgm;
+	if (!f_ken_pgm.copy_center_around(kernel, kernel_read, width_h, height_h, width_kernel_pgm, height_kernel_pgm)){
+		LOG("filter.copy_center_around failed\n");
+		return 0;
+	}
 
 #endif
 
-#if 0 //dft and idft
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-	printf("dft_idft() start time:%s", asctime(timeinfo) );
-	pgm.dft_idft(80, 80);
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-	printf("dft_idft() end   time:%s", asctime(timeinfo) );
+	double* kernel_crop = (double*)malloc(sizeof(double)*width_kernel*height_kernel);
+	if (kernel_crop == NULL) {
+		return 0;
+	}
+
+	//[JOB spatial domain]convolve whole image with h
+	if (width_kernel != width_h || height_kernel != height_h) {
+		Filter f_copier;
+		
+		if (!f_copier.copy_center_around(kernel_crop, kernel, width_kernel, height_kernel, width_h, height_h)){
+			LOG("filter.copy_center_around failed\n");
+			return 0;
+		}
+		if (!pgm.filtering(kernel_crop, width_kernel, NO_Centering_NO_Crop)) {
+			LOG("pgm.filtering failed\n");
+			return 0;
+		}
+	}
+	else {
+		if (!pgm.filtering(kernel, width_h, NO_Centering_NO_Crop)) {
+			LOG("pgm.filtering failed\n");
+			return 0;
+		}
+	}
+
+	//[JOB frequency domain]element-multiply whole image by H
+	dft_window = width_h/2;
+	//dft_window = height_h/2;
+	if (!pgm.filtering_by_DFT(NULL, kernel, NULL, width_h, height_h, dft_window, true, true, 1.0/100.0)) {
+			LOG("pgm.filtering failed\n");
+			return false;
+	}
+
 #endif
 
-#if 0 //box filter
+#if RUN_FILTER_BY_DCT
+	std::cout << "\
+*************************************\n\
+*                FILTERING BY DCT   *\n\
+*************************************\n";
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	printf("low_pass_eff() start time:%s", asctime(timeinfo) );
-	pgm.low_pass_eff(80, 80, 16);
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-	printf("low_pass_eff() end   time:%s", asctime(timeinfo) );
-	return 0;
+	LOG("start time:%s", asctime(timeinfo));
+	Filter filter;
+	int width_h        = 64; //odd size for no worry of conv aliasing due to centering
+	int height_h       = 64;
+	int dft_window = height_h/2;
+
+	double* kernel = NULL;
+	uint8_t* kernel_GrayScale = (uint8_t*)malloc(sizeof(uint8_t)*width_h*height_h);
+	int width_kernel  = 64; //odd size for no worry of conv aliasing due to centering
+	int height_kernel = 64;
+	bool is_H_shifted_to_center = true;
+	bool is_H_from_normalized   = true;
+	
+#if 1
+	int width_circle  = 16;
+	int height_circle = 16;
+	int radius_circle = 8;
+	if (is_H_shifted_to_center) {
+		width_circle = width_h;
+		height_circle = height_h;
+	}
+	if(!filter.circle(&kernel_GrayScale, &kernel, width_circle, height_circle, radius_circle
+		, dft_window, width_h, height_h, NULL, NULL, 0, is_H_from_normalized, false)) {
+		LOG("filter.circle failed\n");
+		return 0;
+	}
+#elif 1
+	kernel = (double*)malloc(sizeof(double)*width_h*height_h);
+	if (kernel == NULL)
+		return 0;
+	memset(kernel, 0, sizeof(double)*width_h*height_h);
+	double x = 0;
+	double y = 0;
+	double d = 0;
+	double r = 0;
+	double phi = 0;
+	double dpm = 20;
+	double rmax = 2;
+	double freq = 8000;
+	double velocity = 3000;
+	for (int j=0; j<height_h; j++) {
+		for (int i=0; i<width_h; i++) {
+			x = ((double)i + 0.5f)/dpm;
+            y = ((double)j + 0.5f)/dpm;
+            r = sqrtf(x*x + y*y + d*d) + d;
+            if (r < rmax)
+            {
+                phi = -2.0f*PI*freq*r/velocity;
+                kernel[i+j*width_h] += cos(phi);
+            }
+		}
+	}
+
+#else
+	int width_kernel_pgm = 1024;
+	int height_kernel_pgm = 512;
+	double* kernel_read = (double*)malloc(sizeof(double)*width_kernel_pgm*height_kernel_pgm);
+	kernel              = (double*)malloc(sizeof(double)*width_h*height_h);
+	ifstream fis;
+	string fn_h_im = "C:\\src\\amo\\DIP\\Debug\\h_re.bin";
+	fis.open(fn_h_im.c_str(), ios::in | ios::binary);
+	if (fis.fail()) {
+		LOG("%s\n", strerror(errno));
+		return false;
+	}
+	fis.seekg(0, ios::beg);
+	fis.read((char*)kernel_read,sizeof(double)*(double)width_kernel_pgm*(double)height_kernel_pgm);
+	LOG("Read kernel from:%s\n", fn_h_im);
+
+	Filter f_ken_pgm;
+	if (!f_ken_pgm.copy_center_around(kernel, kernel_read, width_h, height_h, width_kernel_pgm, height_kernel_pgm)){
+		LOG("filter.copy_center_around failed\n");
+		return 0;
+	}
+
 #endif
-#else //tiff test
+
+	double* kernel_crop = (double*)malloc(sizeof(double)*width_kernel*height_kernel);
+	if (kernel_crop == NULL) {
+		return 0;
+	}
+
+	//[JOB spatial domain]convolve whole image with h
+	if (width_kernel != width_h || height_kernel != height_h) {
+		Filter f_copier;
+		
+		if (!f_copier.copy_center_around(kernel_crop, kernel, width_kernel, height_kernel, width_h, height_h)){
+			LOG("filter.copy_center_around failed\n");
+			return 0;
+		}
+		if (!pgm.filtering(kernel_crop, width_kernel, NO_Centering_NO_Crop)) {
+			LOG("pgm.filtering failed\n");
+			return 0;
+		}
+	}
+	else {
+		LOG("No need to crop kernel so just to copy\n");
+		memcpy(kernel_crop, kernel, sizeof(double)*width_kernel*height_kernel);
+		if (!pgm.filtering(kernel, width_h, NO_Centering_NO_Crop)) {
+			LOG("pgm.filtering failed\n");
+			return 0;
+		}
+	}
+
+	//[JOB frequency domain]element-multiply whole image by H
+	if (!pgm.filtering_by_DCT(NULL, kernel_crop, NULL, width_kernel, height_kernel, width_kernel, width_kernel, false, false)) {
+			LOG("pgm.filtering failed\n");
+			return false;
+	}
+
+#endif
+
+#if RUN_DECONV_BY_DFT	
+	std::cout << "\
+*************************************\n\
+*                DECONVOLUTION      *\n\
+*************************************\n";
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	LOG("Deconv() start time:%s", asctime(timeinfo));
+	Filter filter;
+	int width_h        = 179; //odd size for no worry of conv aliasing due to centering
+	int height_h       = 79;
+	int dft_window = height_h/2;
+
+	//[PLAN 1]convolve with inverse h
+	double* inverse_psf_kernel = NULL;
+	int width_circle_inverse_psf  = 16;
+	int height_circle_inverse_psf = 16;
+	int radius_circle_inverse_psf = 8;
+	uint8_t* img_tmp_for_inver_psf = (uint8_t*)malloc(sizeof(uint8_t)*width_h*height_h);
+	
+	int width_kernel  = 79; //odd size for no worry of conv aliasing due to centering
+	int height_kernel = 79;
+	bool is_H_shifted_to_center = true;
+	bool is_H_from_normalized = true;
+	
+	if (is_H_shifted_to_center) {
+		width_circle_inverse_psf = width_h;
+		height_circle_inverse_psf = height_h;
+	}
+
+	filter.circle(&img_tmp_for_inver_psf, &inverse_psf_kernel, width_circle_inverse_psf, height_circle_inverse_psf, radius_circle_inverse_psf
+		, dft_window, width_h, height_h, NULL, NULL, 0, is_H_from_normalized, true);
+
+	if (width_kernel != width_h || height_kernel != height_h) {
+		Filter f_copier;
+		double* inverse_psf_kernel_crop = (double*)malloc(sizeof(double)*width_kernel*height_kernel);
+		f_copier.copy_center_around(inverse_psf_kernel_crop, inverse_psf_kernel, width_kernel, height_kernel, width_h, height_h);
+		pgm.filtering(inverse_psf_kernel_crop, width_kernel, NO_Centering_NO_Crop);
+	}
+	else {
+		pgm.filtering(inverse_psf_kernel, width_h, NO_Centering_NO_Crop);
+	}
+
+	//[PLAN 2]de-convolve with  h
+	double* psf_kernel = NULL;
+	uint8_t* img_tmp       = (uint8_t*)malloc(sizeof(uint8_t)*width_h*height_h);
+	complex<double>* H = NULL;
+
+#if 1 //circle
+	int width_circle  = 16;
+	int height_circle = 16;
+	//int radius_circle = width_h/2;
+	int radius_circle = 8;
+	if (is_H_shifted_to_center) {
+		width_circle = width_h;
+		height_circle = height_h;
+	}
+
+	filter.circle(&img_tmp, &psf_kernel, width_circle, height_circle, radius_circle, dft_window, width_h, height_h, &H, NULL, 0, is_H_from_normalized, false);
+#elif 0
+	int width_rect  = 8;
+	int height_rect = 8;
+	int radius_rect = 4;
+	filter.rectangle(&psf_kernel, width_rect, height_rect, radius_rect, width_h, height_h, &H, is_H_from_normalized);
+#else
+	int width_cosx  = 79;
+	int height_cosx = 79;
+
+	double freq = 10; //MHz
+	double phi = 0;
+	is_H_from_normalized = true;
+	filter.cos_x(&psf_kernel, width_cosx, height_cosx, dft_window, width_h, height_h, freq, phi, &H, is_H_from_normalized);
+#endif
+	if (!is_H_from_normalized) {
+		for (int p = 0; p<width_h*height_h; p++) {
+			H[p] /= ((double)width_h*(double)height_h); 
+		}
+	}
+
+	LOG("DFT of I...\n");
+	complex<double>* I = (complex<double>*)malloc(sizeof(complex<double>)*width_h*height_h);
+	pgm.dft(&I, width_h, height_h, dft_window, false);
+
+	LOG("Deconvolution...\n");
+	uint8_t* recst = NULL;
+	double nsr = 1.0/20.0;
+
+
+	filter.deconvolution_wiener(&recst, I, H, width_h, height_h, dft_window, nsr, pgm.file, is_H_shifted_to_center);
+	
+	if (I)
+		free(I);
+	if (H)
+		free(H);
+	if (recst)
+		free(recst);
+	if (img_tmp)
+		free(img_tmp);
+	if (img_tmp_for_inver_psf)
+		free(img_tmp_for_inver_psf);
+	if (psf_kernel)
+		free(psf_kernel);
+
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	LOG("Deconv() end time:%s", asctime(timeinfo) );
+
+#endif
+
+
+#if RUN_DECONV_BY_DCT	
+	std::cout << "\
+*******************************************\n\
+*                DECONVOLUTION BY DCT     *\n\
+*******************************************\n";
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	LOG("DECONVOLUTION BY DCT start time:%s", asctime(timeinfo));
+	Filter filter;
+	int width_h        = 128; //odd size for no worry of conv aliasing due to centering
+	int height_h       = 128;
+	int dft_window = height_h/2;
+
+	//[PLAN 1]convolve with inverse h
+	double* inverse_psf_kernel = NULL;
+	int width_circle_inverse_psf  = 8;
+	int height_circle_inverse_psf = 8;
+	int radius_circle_inverse_psf = 2;
+	uint8_t* img_tmp_for_inver_psf = (uint8_t*)malloc(sizeof(uint8_t)*width_h*height_h);
+	
+	int width_kernel  = 79; //odd size for no worry of conv aliasing due to centering
+	int height_kernel = 79;
+	bool is_H_shifted_to_center = true;
+	bool is_H_from_normalized = true;
+	
+	double* Y = NULL;
+	//int group = 8;
+	int group = width_h;
+	
+	if (is_H_shifted_to_center) {
+		width_circle_inverse_psf = width_h;
+		height_circle_inverse_psf = height_h;
+	}
+
+	if (!filter.circle(&img_tmp_for_inver_psf, &inverse_psf_kernel, width_circle_inverse_psf, height_circle_inverse_psf, radius_circle_inverse_psf
+		, dft_window, width_h, height_h, NULL, &Y, group, is_H_from_normalized, true))
+	{
+		LOG("filter.circle failed\n");
+		return 0;
+	}
+
+	if (width_kernel != width_h || height_kernel != height_h) {
+		Filter f_copier;
+		double* inverse_psf_kernel_crop = (double*)malloc(sizeof(double)*width_kernel*height_kernel);
+		f_copier.copy_center_around(inverse_psf_kernel_crop, inverse_psf_kernel, width_kernel, height_kernel, width_h, height_h);
+		pgm.filtering(inverse_psf_kernel_crop, width_kernel, NO_Centering_NO_Crop);
+	}
+	else {
+		pgm.filtering(inverse_psf_kernel, width_h, NO_Centering_NO_Crop);
+	}
+
+	LOG("DCT of I...\n");
+	//int group = width_h;
+	double* I = (double*)malloc(sizeof(double)*width_h*height_h);
+	pgm.dct(&I, width_h, height_h, dft_window, group, true);
+
+	if (I)
+		free(I);
+
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	LOG("DECONVOLUTION BY DCT end time:%s", asctime(timeinfo) );
+
+#endif
+
+#if RUN_DCT_AND_IDCT
+	std::cout << "\
+*************************************\n\
+*                DCT then IDCT      *\n\
+*************************************\n";
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	LOG("dct start time:%s", asctime(timeinfo) );
+	int w_dct = 128;
+	int h_dct = 128;
+	int window_dct = w_dct;
+	int group_dct = 8;
+	//pgm.dct(NULL,128,128);
+#if RUN_DECONV_BY_DCT
+	pgm.dct(NULL, w_dct, h_dct, window_dct, group_dct, true);
+#else
+	pgm.dct(NULL, w_dct, h_dct, window_dct, group_dct, false);
+#endif
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	LOG("dct end time:%s", asctime(timeinfo) );
+
+	//pgm.idct(NULL, 128, 128);
+	pgm.idct(NULL, w_dct, h_dct, window_dct, group_dct);
+
+
+#endif
+
+#elif USE_TIFF //tiff test
+	std::cout << "\
+*************************************\n\
+*                TIFF               *\n\
+*************************************\n";
 	//ostream& (*pf)(ostream&) = Foo; 
-	//cout << pf;
+	//std::cout << pf;
 
 	uint8_t* data = NULL;
 	int size = 0;
 	Tiff t;
-	//t.read_type2("C:\\src\\amo\\DIP\\Debug\\barbara.tif", data, &size);
-	t.read_type2("C:\\src\\amo\\DIP\\Debug\\finger.tif", data, &size);
+	t.read_type2("C:\\src\\amo\\DIP\\Debug\\barbara.tif", data, &size);
 	
 #if 1 //current topics	
 	//t.dft_idft(100, 100);
@@ -593,20 +1585,20 @@ int main()
 #if 0
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	printf("low_pass() start time:%s", asctime(timeinfo) );
+	LOG("low_pass() start time:%s", asctime(timeinfo) );
 	t.low_pass(100,100, 20);
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	printf("low_pass() end   time:%s", asctime(timeinfo) );
+	LOG("low_pass() end time:%s", asctime(timeinfo) );
 #endif	
 
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	printf("low_pass_eff() start time:%s", asctime(timeinfo) );
+	LOG("low_pass_eff() start time:%s", asctime(timeinfo) );
 	t.low_pass_eff(250, 250, 50);
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	printf("low_pass_eff() end   time:%s", asctime(timeinfo) );
+	LOG("low_pass_eff() end time:%s", asctime(timeinfo) );
 #endif
 
 #if 0 //previous topics
@@ -644,11 +1636,17 @@ int main()
 	if (ht_dots) delete[] ht_dots;
 	if (bufFloydSteinbergDithering) delete[] bufFloydSteinbergDithering;
 #endif
+
+#else
+	std::cout << "\
+*************************************\n\
+*                USE NOTHING         *\n\
+*************************************\n";
 #endif
 	//pf = Qoo;
-	//cout << pf;
+	//std::cout << pf;
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	printf("end time:%s", asctime(timeinfo) );
+	LOG("end time:%s", asctime(timeinfo) );
 	system("pause");
 }
