@@ -25,7 +25,7 @@ Digital Image Processing
 
 12.Discrete cosine transform
 
-13.PSF blurring and deblurring
+13.Blurring and deblurring
 
 # Floyd Steinberg Dithering
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/FloydSteinbergDithering.png)
@@ -50,5 +50,5 @@ Digital Image Processing
 # Discrete cosine transform
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/my_dct_and_idct_lp_filter.jpg)
 
-# PSF blurring and deblurring
+# Blurring and deblurring
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/lena_deconv_psf_with_lp.jpg)
