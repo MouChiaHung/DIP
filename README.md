@@ -23,6 +23,10 @@ Digital Image Processing
 
 11.2D Gradient
 
+12.Discrete cosine transform
+
+13.PSF blurring and deblurring
+
 # Floyd Steinberg Dithering
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/FloydSteinbergDithering.png)
 
@@ -42,3 +46,9 @@ Digital Image Processing
 
 # 2D Gradient
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/gradient_2object.jpg)
+
+# Discrete cosine transform
+![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/my_dct_and_idct_lp_filter.jpg)
+
+# PSF blurring and deblurring
+![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/lena_deconv_psf_with_lp.jpg)
