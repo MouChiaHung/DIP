@@ -31,10 +31,8 @@ using namespace std;
 #define RUN_GRADIENT      0
 #define RUN_DFT_AND_IDFT  0
 #define RUN_BOX_FILTER    0
-#define RUN_FILTER_BY_DFT 1
-#define RUN_FILTER_BY_DCT 0
-#define RUN_DECONV_BY_DFT 0
-#define RUN_DECONV_BY_DCT 0
+#define RUN_FILTER_BY_DFT 0
+#define RUN_FILTER_BY_DCT 1
 #define RUN_DCT_AND_IDCT  0
 
 	/******************************************************************************
@@ -408,7 +406,40 @@ int main()
 	return 0;
 #endif
 
-#if 1 //Copy
+#if 1 //Mirror-padding
+	int w = 3;
+	int h = 3;
+	double *im = (double*)malloc(sizeof(double)*w*h);
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			im[i+j*w] = floor(((i+1)+j*w)%(9)+0.6);
+		}
+	}
+
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			LOG("[%.f]", im[i+j*w]);
+			if (!((i+1)%w)) LOG("\n");
+		}
+	}
+
+	double* dst = NULL;
+	int w_dst = 0;
+	int h_dst = 0;
+	Filter f_mirror_padding;
+	if (!f_mirror_padding.mirrorPadding(&dst, im, &w_dst, &h_dst, w, h)) {
+		return 0;
+	}
+
+	for (int j=0; j<h_dst; j++) {
+		for (int i=0; i<w_dst; i++) {
+			LOG("[%.f]", dst[i+j*w_dst]);
+			if (!((i+1)%w_dst)) LOG("\n");
+		}
+	}
+#endif
+
+#if 0 //Copy
 	int w = 3;
 	int h = 3;
 	double *im = (double*)malloc(sizeof(double)*w*h);
@@ -1082,7 +1113,6 @@ int main()
 	bool is_H_shifted_to_center = true;
 	bool is_H_from_normalized   = true;
 	
-#if 1
 	int width_circle  = 16;
 	int height_circle = 16;
 	int radius_circle = 8;
@@ -1091,130 +1121,17 @@ int main()
 		height_circle = height_h;
 	}
 	if(!filter.circle(&kernel_GrayScale, &kernel, width_circle, height_circle, radius_circle
-		, dft_window, width_h, height_h, NULL, NULL, 0, is_H_from_normalized, false)) {
+		, dft_window, width_h, height_h, NULL, NULL, is_H_from_normalized, false, false)) {
 		LOG("filter.circle failed\n");
 		return 0;
 	}
-#elif 1
-	double* table = (double*)malloc(sizeof(double)*width_h*1);
-	if (table == NULL)
-		return 0;
-	memset(table, 0, sizeof(double)*width_h*1);
-	double* kernel_meta = (double*)malloc(sizeof(double)*width_h*height_h);
-	if (kernel_meta == NULL)
-		return 0;
-	memset(kernel_meta, 0, sizeof(double)*width_h*height_h);
-	double x = 0;
-	double y = 0;
-	double d = 0;
-	double r = 0;
-	double phi = 0;
-	double dpm = 10;
-	double rmax = 0.6;
-	double freq = 5000;
-	double velocity = 3000;
-	int    ind = 0;
-	double length = (width_h>=height_h)?width_h:height_h;
-	for (int j=0; j<height_h; j++) {
-		for (int i=0; i<width_h; i++) {
-			x = ((double)i + 0.5f)/dpm;
-            y = ((double)j + 0.5f)/dpm;
-            r = sqrtf(x*x + y*y + d*d) + d;
-            if (r < rmax)
-            {
-                phi = -2.0f*PI*freq*r/velocity;
-                table[i] += cos(phi);
-			}
-		}
-	}
-	for (int j=0; j<height_h; j++) {
-		for (int i=0; i<width_h; i++) {
-			x = abs((width_h/2)-i);
-            y = abs((height_h/2)-j);
-            r = sqrtf(x*x + y*y);
-            ind = (int)floorf(r + 0.5f);
-            if (ind >= length)
-                ind = length-1;
-			kernel_meta[i+j*width_h] = table[ind];
-		}
-	}
-#if 1
-	Filter f_kernel_norm;
-	f_kernel_norm.normalize(kernel, kernel_meta, width_h, height_h, 0, 1, true);
-#else
-	kernel = (double*)malloc(sizeof(double)*width_h*height_h);
-	if (kernel == NULL)
-		return 0;
-	memset(kernel, 0, sizeof(double)*width_h*height_h);
-	memcpy(kernel, kernel_meta, sizeof(double)*width_h*height_h);
-#endif
-	ofstream fos;
-	try {
-		string file_name = "C:\\src\\amo\\DIP\\Debug\\table";
-		file_name += ".raw";
-		remove(file_name.c_str());
-		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
-		if (fos.fail()) {
-			LOG("%s\n", strerror(errno));
-			return false;
-		}
-		else fos.clear();
-		fos.write((char*)table, sizeof(double)*(double)width_h*(double)1);
-		fos.close();
-		LOG("[%dx%d Table file]:%s\n", width_h, 1, file_name.c_str());
-
-		file_name = "C:\\src\\amo\\DIP\\Debug\\kernel_diy";
-		file_name += ".raw";
-		remove(file_name.c_str());
-		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
-		if (fos.fail()) {
-			LOG("%s\n", strerror(errno));
-			return false;
-		}
-		else fos.clear();
-		fos.write((char*)kernel, sizeof(double)*(double)width_h*(double)height_h);
-		fos.close();
-		LOG("[%dx%d Kernel file]:%s\n", width_h, height_h, file_name.c_str());
-	}
-	catch (exception ex) {
-		return false;
-	}
-
-	if (kernel_meta)
-		free(kernel_meta);
-	if (table)
-		free(table);
-
-#else
-	int width_kernel_pgm = 1024;
-	int height_kernel_pgm = 512;
-	double* kernel_read = (double*)malloc(sizeof(double)*width_kernel_pgm*height_kernel_pgm);
-	kernel              = (double*)malloc(sizeof(double)*width_h*height_h);
-	ifstream fis;
-	string fn_h_im = "C:\\src\\amo\\DIP\\Debug\\h_re.bin";
-	fis.open(fn_h_im.c_str(), ios::in | ios::binary);
-	if (fis.fail()) {
-		LOG("%s\n", strerror(errno));
-		return false;
-	}
-	fis.seekg(0, ios::beg);
-	fis.read((char*)kernel_read,sizeof(double)*(double)width_kernel_pgm*(double)height_kernel_pgm);
-	LOG("Read kernel from:%s\n", fn_h_im.c_str());
-
-	Filter f_ken_pgm;
-	if (!f_ken_pgm.copy_center_around(kernel, kernel_read, width_h, height_h, width_kernel_pgm, height_kernel_pgm)){
-		LOG("filter.copy_center_around failed\n");
-		return 0;
-	}
-
-#endif
 
 	double* kernel_crop = (double*)malloc(sizeof(double)*width_kernel*height_kernel);
 	if (kernel_crop == NULL) {
 		return 0;
 	}
 
-	//[JOB spatial domain]convolve whole image with h
+	//[Spatial domain]convolve whole image with h
 	if (width_kernel != width_h || height_kernel != height_h) {
 		Filter f_copier;
 		
@@ -1234,11 +1151,11 @@ int main()
 		}
 	}
 
-	//[JOB frequency domain]element-multiply whole image by H
+	//[Frequency domain]element-multiply whole image by H
 	dft_window = width_h/2;
 	//dft_window = height_h/2;
 	if (!pgm.filtering_by_DFT(NULL, kernel, NULL, width_h, height_h, dft_window, true, true, 1.0/100.0)) {
-			LOG("pgm.filtering failed\n");
+			LOG("pgm.filtering_by_DFT failed\n");
 			return false;
 	}
 
@@ -1252,290 +1169,62 @@ int main()
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
 	LOG("start time:%s", asctime(timeinfo));
-	Filter filter;
-	int width_h        = 64; //odd size for no worry of conv aliasing due to centering
-	int height_h       = 64;
-	int dft_window = height_h/2;
-
 	double* kernel = NULL;
-	uint8_t* kernel_GrayScale = (uint8_t*)malloc(sizeof(uint8_t)*width_h*height_h);
-	int width_kernel  = 64; //odd size for no worry of conv aliasing due to centering
-	int height_kernel = 64;
-	bool is_H_shifted_to_center = true;
-	bool is_H_from_normalized   = true;
-	
-#if 1
-	int width_circle  = 16;
-	int height_circle = 16;
+	Filter filter;
+	int width_h       = 180;
+	int height_h      = 80;
 	int radius_circle = 8;
-	if (is_H_shifted_to_center) {
-		width_circle = width_h;
-		height_circle = height_h;
-	}
-	if(!filter.circle(&kernel_GrayScale, &kernel, width_circle, height_circle, radius_circle
-		, dft_window, width_h, height_h, NULL, NULL, 0, is_H_from_normalized, false)) {
+	int dct_window    = width_h/2;
+	bool do_norm2one  = true;
+	if(!filter.circle(NULL, &kernel, width_h, height_h, radius_circle
+		, dct_window, width_h, height_h, NULL, NULL, do_norm2one, false, true)) {
 		LOG("filter.circle failed\n");
 		return 0;
 	}
-#elif 1
-	kernel = (double*)malloc(sizeof(double)*width_h*height_h);
-	if (kernel == NULL)
-		return 0;
-	memset(kernel, 0, sizeof(double)*width_h*height_h);
-	double x = 0;
-	double y = 0;
-	double d = 0;
-	double r = 0;
-	double phi = 0;
-	double dpm = 20;
-	double rmax = 2;
-	double freq = 8000;
-	double velocity = 3000;
-	for (int j=0; j<height_h; j++) {
-		for (int i=0; i<width_h; i++) {
-			x = ((double)i + 0.5f)/dpm;
-            y = ((double)j + 0.5f)/dpm;
-            r = sqrtf(x*x + y*y + d*d) + d;
-            if (r < rmax)
-            {
-                phi = -2.0f*PI*freq*r/velocity;
-                kernel[i+j*width_h] += cos(phi);
-            }
-		}
-	}
 
-#else
-	int width_kernel_pgm = 1024;
-	int height_kernel_pgm = 512;
-	double* kernel_read = (double*)malloc(sizeof(double)*width_kernel_pgm*height_kernel_pgm);
-	kernel              = (double*)malloc(sizeof(double)*width_h*height_h);
-	ifstream fis;
-	string fn_h_im = "C:\\src\\amo\\DIP\\Debug\\h_re.bin";
-	fis.open(fn_h_im.c_str(), ios::in | ios::binary);
-	if (fis.fail()) {
-		LOG("%s\n", strerror(errno));
-		return false;
-	}
-	fis.seekg(0, ios::beg);
-	fis.read((char*)kernel_read,sizeof(double)*(double)width_kernel_pgm*(double)height_kernel_pgm);
-	LOG("Read kernel from:%s\n", fn_h_im);
-
-	Filter f_ken_pgm;
-	if (!f_ken_pgm.copy_center_around(kernel, kernel_read, width_h, height_h, width_kernel_pgm, height_kernel_pgm)){
-		LOG("filter.copy_center_around failed\n");
-		return 0;
-	}
-
-#endif
-
+	//[Spatial domain]convolve whole image with h
+	int width_kernel  = 79; //odd size for no worry of conv aliasing due to centering
+	int height_kernel = 79;
+	int width_kernel_even_ext  = 0; 
+	int height_kernel_even_ext = 0;
+	double* kernel_even_ext = NULL;
 	double* kernel_crop = (double*)malloc(sizeof(double)*width_kernel*height_kernel);
 	if (kernel_crop == NULL) {
 		return 0;
 	}
+	Filter f_copier;
+	DFT dft_shifter;
 
-	//[JOB spatial domain]convolve whole image with h
-	if (width_kernel != width_h || height_kernel != height_h) {
-		Filter f_copier;
-		
-		if (!f_copier.copy_center_around(kernel_crop, kernel, width_kernel, height_kernel, width_h, height_h)){
-			LOG("filter.copy_center_around failed\n");
-			return 0;
-		}
-		if (!pgm.filtering(kernel_crop, width_kernel, NO_Centering_NO_Crop)) {
-			LOG("pgm.filtering failed\n");
-			return 0;
-		}
-	}
-	else {
-		LOG("No need to crop kernel so just to copy\n");
-		memcpy(kernel_crop, kernel, sizeof(double)*width_kernel*height_kernel);
-		if (!pgm.filtering(kernel, width_h, NO_Centering_NO_Crop)) {
-			LOG("pgm.filtering failed\n");
-			return 0;
-		}
-	}
-
-	//[JOB frequency domain]element-multiply whole image by H
-	if (!pgm.filtering_by_DCT(NULL, kernel_crop, NULL, width_kernel, height_kernel, width_kernel, width_kernel, false, false)) {
-			LOG("pgm.filtering failed\n");
-			return false;
-	}
-
-#endif
-
-#if RUN_DECONV_BY_DFT	
-	std::cout << "\
-*************************************\n\
-*                DECONVOLUTION      *\n\
-*************************************\n";
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-	LOG("Deconv() start time:%s", asctime(timeinfo));
-	Filter filter;
-	int width_h        = 179; //odd size for no worry of conv aliasing due to centering
-	int height_h       = 79;
-	int dft_window = height_h/2;
-
-	//[PLAN 1]convolve with inverse h
-	double* inverse_psf_kernel = NULL;
-	int width_circle_inverse_psf  = 16;
-	int height_circle_inverse_psf = 16;
-	int radius_circle_inverse_psf = 8;
-	uint8_t* img_tmp_for_inver_psf = (uint8_t*)malloc(sizeof(uint8_t)*width_h*height_h);
-	
-	int width_kernel  = 79; //odd size for no worry of conv aliasing due to centering
-	int height_kernel = 79;
-	bool is_H_shifted_to_center = true;
-	bool is_H_from_normalized = true;
-	
-	if (is_H_shifted_to_center) {
-		width_circle_inverse_psf = width_h;
-		height_circle_inverse_psf = height_h;
-	}
-
-	filter.circle(&img_tmp_for_inver_psf, &inverse_psf_kernel, width_circle_inverse_psf, height_circle_inverse_psf, radius_circle_inverse_psf
-		, dft_window, width_h, height_h, NULL, NULL, 0, is_H_from_normalized, true);
-
-	if (width_kernel != width_h || height_kernel != height_h) {
-		Filter f_copier;
-		double* inverse_psf_kernel_crop = (double*)malloc(sizeof(double)*width_kernel*height_kernel);
-		f_copier.copy_center_around(inverse_psf_kernel_crop, inverse_psf_kernel, width_kernel, height_kernel, width_h, height_h);
-		pgm.filtering(inverse_psf_kernel_crop, width_kernel, NO_Centering_NO_Crop);
-	}
-	else {
-		pgm.filtering(inverse_psf_kernel, width_h, NO_Centering_NO_Crop);
-	}
-
-	//[PLAN 2]de-convolve with  h
-	double* psf_kernel = NULL;
-	uint8_t* img_tmp       = (uint8_t*)malloc(sizeof(uint8_t)*width_h*height_h);
-	complex<double>* H = NULL;
-
-#if 1 //circle
-	int width_circle  = 16;
-	int height_circle = 16;
-	//int radius_circle = width_h/2;
-	int radius_circle = 8;
-	if (is_H_shifted_to_center) {
-		width_circle = width_h;
-		height_circle = height_h;
-	}
-
-	filter.circle(&img_tmp, &psf_kernel, width_circle, height_circle, radius_circle, dft_window, width_h, height_h, &H, NULL, 0, is_H_from_normalized, false);
-#elif 0
-	int width_rect  = 8;
-	int height_rect = 8;
-	int radius_rect = 4;
-	filter.rectangle(&psf_kernel, width_rect, height_rect, radius_rect, width_h, height_h, &H, is_H_from_normalized);
-#else
-	int width_cosx  = 79;
-	int height_cosx = 79;
-
-	double freq = 10; //MHz
-	double phi = 0;
-	is_H_from_normalized = true;
-	filter.cos_x(&psf_kernel, width_cosx, height_cosx, dft_window, width_h, height_h, freq, phi, &H, is_H_from_normalized);
-#endif
-	if (!is_H_from_normalized) {
-		for (int p = 0; p<width_h*height_h; p++) {
-			H[p] /= ((double)width_h*(double)height_h); 
-		}
-	}
-
-	LOG("DFT of I...\n");
-	complex<double>* I = (complex<double>*)malloc(sizeof(complex<double>)*width_h*height_h);
-	pgm.dft(&I, width_h, height_h, dft_window, false);
-
-	LOG("Deconvolution...\n");
-	uint8_t* recst = NULL;
-	double nsr = 1.0/20.0;
-
-
-	filter.deconvolution_wiener(&recst, I, H, width_h, height_h, dft_window, nsr, pgm.file, is_H_shifted_to_center);
-	
-	if (I)
-		free(I);
-	if (H)
-		free(H);
-	if (recst)
-		free(recst);
-	if (img_tmp)
-		free(img_tmp);
-	if (img_tmp_for_inver_psf)
-		free(img_tmp_for_inver_psf);
-	if (psf_kernel)
-		free(psf_kernel);
-
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-	LOG("Deconv() end time:%s", asctime(timeinfo) );
-
-#endif
-
-
-#if RUN_DECONV_BY_DCT	
-	std::cout << "\
-*******************************************\n\
-*                DECONVOLUTION BY DCT     *\n\
-*******************************************\n";
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-	LOG("DECONVOLUTION BY DCT start time:%s", asctime(timeinfo));
-	Filter filter;
-	int width_h        = 128; //odd size for no worry of conv aliasing due to centering
-	int height_h       = 128;
-	int dft_window = height_h/2;
-
-	//[PLAN 1]convolve with inverse h
-	double* inverse_psf_kernel = NULL;
-	int width_circle_inverse_psf  = 8;
-	int height_circle_inverse_psf = 8;
-	int radius_circle_inverse_psf = 2;
-	uint8_t* img_tmp_for_inver_psf = (uint8_t*)malloc(sizeof(uint8_t)*width_h*height_h);
-	
-	int width_kernel  = 79; //odd size for no worry of conv aliasing due to centering
-	int height_kernel = 79;
-	bool is_H_shifted_to_center = true;
-	bool is_H_from_normalized = true;
-	
-	double* Y = NULL;
-	//int group = 8;
-	int group = width_h;
-	
-	if (is_H_shifted_to_center) {
-		width_circle_inverse_psf = width_h;
-		height_circle_inverse_psf = height_h;
-	}
-
-	if (!filter.circle(&img_tmp_for_inver_psf, &inverse_psf_kernel, width_circle_inverse_psf, height_circle_inverse_psf, radius_circle_inverse_psf
-		, dft_window, width_h, height_h, NULL, &Y, group, is_H_from_normalized, true))
-	{
-		LOG("filter.circle failed\n");
+	if (!f_copier.mirrorPadding(&kernel_even_ext, kernel, &width_kernel_even_ext, &height_kernel_even_ext, width_h, height_h)){
+		LOG("filter.mirrorPadding failed\n");
 		return 0;
 	}
 
-	if (width_kernel != width_h || height_kernel != height_h) {
-		Filter f_copier;
-		double* inverse_psf_kernel_crop = (double*)malloc(sizeof(double)*width_kernel*height_kernel);
-		f_copier.copy_center_around(inverse_psf_kernel_crop, inverse_psf_kernel, width_kernel, height_kernel, width_h, height_h);
-		pgm.filtering(inverse_psf_kernel_crop, width_kernel, NO_Centering_NO_Crop);
+	if (!dft_shifter.fftshift(kernel_even_ext, width_kernel_even_ext, height_kernel_even_ext)){
+		LOG("dft.fftshift failed\n");
+		return 0;
 	}
-	else {
-		pgm.filtering(inverse_psf_kernel, width_h, NO_Centering_NO_Crop);
+		
+	if (!f_copier.copy_center_around(kernel_crop, kernel_even_ext, width_kernel, height_kernel, width_kernel_even_ext, height_kernel_even_ext)){
+		LOG("filter.copy_center_around failed\n");
+		return 0;
+	}
+	if (!pgm.filtering(kernel_crop, width_kernel, NO_Centering_NO_Crop)) {
+		LOG("pgm.filtering failed\n");
+		return 0;
 	}
 
-	LOG("DCT of I...\n");
-	//int group = width_h;
-	double* I = (double*)malloc(sizeof(double)*width_h*height_h);
-	pgm.dct(&I, width_h, height_h, dft_window, group, true);
+	//[Frequency domain]element-multiply whole image by H
+	if (!pgm.filtering_by_DCT(NULL, kernel, NULL, width_h, height_h, false, true, false)) {
+			LOG("pgm.filtering_by_DCT failed\n");
+			return false;
+	}
 
-	if (I)
-		free(I);
-
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-	LOG("DECONVOLUTION BY DCT end time:%s", asctime(timeinfo) );
-
+	//free resource
+	if (kernel)
+		free(kernel);
+	if (kernel_crop)
+		free(kernel_crop);
 #endif
 
 #if RUN_DCT_AND_IDCT
@@ -1546,8 +1235,8 @@ int main()
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
 	LOG("dct start time:%s", asctime(timeinfo) );
-	int w_dct = 128;
-	int h_dct = 128;
+	int w_dct = 64;
+	int h_dct = 64;
 	int window_dct = w_dct;
 	int group_dct = 8;
 	//pgm.dct(NULL,128,128);
