@@ -44,6 +44,28 @@ Filter::~Filter() {
 
 }
 
+bool Filter::nextPowerToFloorLog2(int* dst, int src) {
+	if (src < 0)
+		return false;
+	int ret = 0;
+	while (src >>= 1) {
+		ret++;
+	}
+	*dst = 1<<(ret+1);
+	return true;
+}
+
+bool Filter::log2(int* dst, int src) {
+	if (src < 0)
+		return false;
+	int ret = 0;
+	while (src >>= 1) {
+		ret++;
+	}
+	*dst = ret;
+	return true;
+}
+
 bool Filter::element_wise_multiply(double* dst, double* img, double* ker, int w, int h) 
 {
 	if (w<1 || h<1) {
@@ -131,6 +153,131 @@ bool Filter::element_wise_complex_multiply(double** dst_re, double** dst_im
 	return true;
 }
 
+bool Filter::mirrorPadding(double** pdst, double* src, int* w_dst, int* h_dst, int w_src, int h_src) {
+	double* dst = *pdst;
+	int w = 0;
+	int h = 0;
+	int rf_dst = 0;
+	int rt_dst = 0;
+	int rs_dst = 0;
+	int cf_dst = 0;
+	int ct_dst = 0;
+	int cs_dst = 0;
+	int rf_src = 0;
+	int rt_src = 0;
+	int rs_src = 0;
+	int cf_src = 0;
+	int ct_src = 0;
+	int cs_src = 0;
+	
+	if (dst) {
+		free(dst);
+		dst = NULL;
+	}
+#if 0
+	if (!nextPowerToFloorLog2(w_dst, w_src*2))
+		return false;
+	if (!nextPowerToFloorLog2(h_dst, h_src*2))
+		return false;
+#endif
+	*w_dst = 2*w_src;
+	*h_dst = 2*h_src;
+	w = *w_dst;
+	h = *h_dst;
+	dst = (double*)malloc(sizeof(double)*w*h);
+	if (dst == NULL)
+		return false;
+	memset(dst, 0, sizeof(double)*w*h);
+	*pdst = dst;
+
+	//Copy [u, v]
+    rf_dst = 0;
+	rt_dst = w_src-1;
+	rs_dst = 1;
+	cf_dst = 0;
+	ct_dst = h_src-1;
+	cs_dst = 1;
+
+	rf_src = 0;
+	rt_src = w_src-1;
+	rs_src = 1;
+	cf_src = 0;
+	ct_src = h_src-1;
+	cs_src = 1;
+	LOG("Copy src[%d:%d:%d][%d:%d:%d] to dst[%d:%d:%d][%d:%d:%d]\n"
+		, rf_src, rs_src, rt_src, cf_src, cs_src, ct_src
+		, rf_dst, rs_dst, rt_dst, cf_dst, cs_dst, ct_dst);
+	if (!copy(dst, w, rf_dst, rt_dst, rs_dst, cf_dst, ct_dst, cs_dst, src, w_src, rf_src, rt_src, rs_src, cf_src, ct_src, cs_src)) {
+		return false;
+	}
+
+	//Copy [-u, v]
+    rf_dst = 2*w_src-1;
+	rt_dst = 0;
+	rs_dst = -1;
+	cf_dst = 0;
+	ct_dst = h_src-1;
+	cs_dst = 1;
+
+	rf_src = 0;
+	rt_src = w_src-1;
+	rs_src = 1;
+	cf_src = 0;
+	ct_src = h_src-1;
+	cs_src = 1;
+	LOG("Copy src[%d:%d:%d][%d:%d:%d] to dst[%d:%d:%d][%d:%d:%d]\n"
+		, rf_src, rs_src, rt_src, cf_src, cs_src, ct_src
+		, rf_dst, rs_dst, rt_dst, cf_dst, cs_dst, ct_dst);
+	if (!copy(dst, w, rf_dst, rt_dst, rs_dst, cf_dst, ct_dst, cs_dst, src, w_src, rf_src, rt_src, rs_src, cf_src, ct_src, cs_src)) {
+		return false;
+	}
+
+	//Copy [u, -v]
+    rf_dst = 0;
+	rt_dst = w_src-1;
+	rs_dst = 1;
+	cf_dst = 2*h_src-1;
+	ct_dst = 0;
+	cs_dst = -1;
+
+	rf_src = 0;
+	rt_src = w_src-1;
+	rs_src = 1;
+	cf_src = 0;
+	ct_src = h_src-1;
+	cs_src = 1;
+
+	LOG("Copy src[%d:%d:%d][%d:%d:%d] to dst[%d:%d:%d][%d:%d:%d]\n"
+		, rf_src, rs_src, rt_src, cf_src, cs_src, ct_src
+		, rf_dst, rs_dst, rt_dst, cf_dst, cs_dst, ct_dst);
+	if (!copy(dst, w, rf_dst, rt_dst, rs_dst, cf_dst, ct_dst, cs_dst, src, w_src, rf_src, rt_src, rs_src, cf_src, ct_src, cs_src)) {
+		return false;
+	}
+
+	//Copy [-u, -v]
+    rf_dst = 2*w_src-1;
+	rt_dst = 0;
+	rs_dst = -1;
+	cf_dst = 2*h_src-1;
+	ct_dst = 0;
+	cs_dst = -1;
+
+	rf_src = 0;
+	rt_src = w_src-1;
+	rs_src = 1;
+	cf_src = 0;
+	ct_src = h_src-1;
+	cs_src = 1;
+
+	LOG("Copy src[%d:%d:%d][%d:%d:%d] to dst[%d:%d:%d][%d:%d:%d]\n"
+		, rf_src, rs_src, rt_src, cf_src, cs_src, ct_src
+		, rf_dst, rs_dst, rt_dst, cf_dst, cs_dst, ct_dst);
+	if (!copy(dst, w, rf_dst, rt_dst, rs_dst, cf_dst, ct_dst, cs_dst, src, w_src, rf_src, rt_src, rs_src, cf_src, ct_src, cs_src)) {
+		return false;
+	}
+	return true;
+}
+
 bool Filter::zeroPadding(double*& dst, double* src, int w, int h, int w_append, int h_append, int* w_dst, int* h_dst) {
 	if (dst) {
 		free(dst);
@@ -215,17 +362,19 @@ bool Filter::copy(double* dst, double* src, int w_dst, int h_dst, int w_src, int
 		return false;
 	if (src == NULL) 
 		return false;
-	if (w_src < w_dst) 
-		return false;
-	if (h_dst < h_dst)
-		return false;
+	if (w_src < w_dst) {
+		LOG("w_src:%d < w_dst:%d\n", w_src, w_dst);
+	}
+	if (h_dst < h_dst) {
+		LOG("h_src:%d < h_dst:%d\n", h_src, h_dst);
+	}
 
 	int k = 0;
 
 	int rf_src = 0;
-	int rt_src = w_dst-1;
+	int rt_src = (w_dst-1)<=(w_src-1)?(w_dst-1):(w_src-1);
 	int cf_src = 0;
-	int ct_src = h_dst-1;
+	int ct_src = (h_dst-1)<=(h_src-1)?(h_dst-1):(h_src-1);
 	
 	int rf_dst = 0;
 	int rt_dst = w_dst-1;
@@ -244,12 +393,30 @@ bool Filter::copy(double* dst, double* src, int w_dst, int h_dst, int w_src, int
 				return false;
 			}
 			dst[ii+jj*w_dst] = (src)[(i+j*w_src)];
-#if 0 //debug			
-			if (dst[ii+jj*w_dst]) 
-			LOG("dst[%d][%d] = src[%d][%d]:%f\n", ii, jj, i,j, dst[ii+jj*w_dst]);
-#endif
 		}
 	}
+#if 1 //debug	
+	ofstream fos;
+	try {
+		string file_name = "C:\\src\\amo\\DIP\\Debug\\";
+		char str[512];
+		sprintf(str, "cp_%dx%d_to_%dx%d.raw", w_src, h_src, w_dst, h_dst);
+		file_name += str;
+		remove(file_name.c_str());
+		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+		if (fos.fail()) {
+			LOG("%s\n", strerror(errno));
+			return false;
+		}
+		else fos.clear();
+		fos.write((char*)dst, sizeof(double)*(double)w_dst*(double)h_dst);
+		fos.close();
+		LOG("[Copy image file]:%s\n", file_name.c_str());
+	}
+	catch (exception ex) {
+		return false;
+	}
+#endif
 	LOG("Done to copy [%d]x[%d] into [%d]x[%d]\n", w_src, h_src, w_dst, h_dst);
 	return true;
 }
@@ -291,7 +458,7 @@ bool Filter::copy_center_around(double* dst, double* src, int w_dst, int h_dst, 
 		rt_src = (w_src/2+w_dst/2) + w_aliasing - 1;
 		cf_src = (h_src/2-h_dst/2);
 		ct_src = (h_src/2+h_dst/2) + h_aliasing - 1;
-		LOG("[Big src -> small dst]from [%d][%d] till [%d][%d] to [%d][%d] till [%d][%d]...\n", rf_src, cf_src, rt_src, ct_src, rf_dst, cf_dst, rt_dst, ct_dst);
+		LOG("[Big src -> small dst]From [%d][%d] - [%d][%d] to [%d][%d] - [%d][%d]...\n", rf_src, cf_src, rt_src, ct_src, rf_dst, cf_dst, rt_dst, ct_dst);
 	}
 	else if (w_dst > w_src && h_dst > h_src){
 		w_aliasing = w_src-((w_dst/2+w_src/2)-(w_dst/2-w_src/2));
@@ -308,7 +475,7 @@ bool Filter::copy_center_around(double* dst, double* src, int w_dst, int h_dst, 
 		rt_dst = (w_dst/2+w_src/2) + w_aliasing - 1;
 		cf_dst = (h_dst/2-h_src/2);
 		ct_dst = (h_dst/2+h_src/2) + h_aliasing - 1;
-		LOG("[Small src -> big dst]from [%d][%d] till [%d][%d] to [%d][%d] till [%d][%d]...\n", rf_src, cf_src, rt_src, ct_src, rf_dst, cf_dst, rt_dst, ct_dst);
+		LOG("[Small src -> big dst]From [%d][%d] - [%d][%d] to [%d][%d] - [%d][%d]...\n", rf_src, cf_src, rt_src, ct_src, rf_dst, cf_dst, rt_dst, ct_dst);
 	}
 	else {
 		return false;
@@ -337,7 +504,7 @@ bool Filter::copy_center_around(double* dst, double* src, int w_dst, int h_dst, 
 		string file_name = "C:\\src\\amo\\DIP\\Debug\\";
 		char str[512];
 		//sprintf(str, "copy_%dx%d_to_%dx%d_stamp%d.raw", w_src, h_src, w_dst, h_dst, (int)time(NULL)%10000);
-		sprintf(str, "copy_%dx%d_to_%dx%d.raw", w_src, h_src, w_dst, h_dst, (int)time(NULL)%10000);
+		sprintf(str, "copy_%dx%d_to_%dx%d.raw", w_src, h_src, w_dst, h_dst);
 		file_name += str;
 		remove(file_name.c_str());
 		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
@@ -1775,13 +1942,13 @@ bool Filter::deconvolution_dct(uint8_t** reconstructed, double* I, double* H, in
 }
 
 bool Filter::circle(uint8_t** dst, double** kernel, int w_circle, int h_circle, int r_circle, int window, int w_img, int h_img
-	, complex<double>** H, double** Y, int group, bool is_normalize_and_element_wise_divided_by_sum, bool is_inverse_psf) {
+	, complex<double>** H, double** Y, bool is_normalize_and_element_wise_divided_by_sum, bool is_inverse_psf, bool do_DCT) {
 	if (w_img <= 0 || h_img <= 0 || w_circle <= 0 || h_circle <= 0 || r_circle <= 0)
 		return false;
 	uint8_t* circle = (uint8_t*)malloc(sizeof(uint8_t)*w_circle*h_circle);
 
-	double centerX = w_circle/2;
-	double centerY = h_circle/2;
+	double centerX = 0;
+	double centerY = 0;
 	double delX = 0;
 	double delY = 0;
 	double delR = 0;
@@ -1789,6 +1956,20 @@ bool Filter::circle(uint8_t** dst, double** kernel, int w_circle, int h_circle, 
 	double scale = 0;
 	double decay = 0;
 	double period = r_circle;
+	string file_name = "";
+
+	double* h = NULL;
+	double* h_normed = NULL;
+	
+	if (do_DCT) {
+		centerX = 0;
+		centerY = 0;
+	}
+	else {
+		centerX = w_circle/2;
+		centerY = h_circle/2;	
+	}
+	
 	for (int j=0; j<h_circle; j++) {
 		for (int i=0; i<w_circle; i++) {
 			p = i+j*w_circle;
@@ -1830,7 +2011,7 @@ bool Filter::circle(uint8_t** dst, double** kernel, int w_circle, int h_circle, 
 		}
 		else fos.clear();
 		uint8_t *output = NULL;
-		fos.write((char*)circle, (double)w_circle*(double)h_circle);
+		fos.write((char*)circle, sizeof(uint8_t)*(double)w_circle*(double)h_circle);
 		fos.close();
 		LOG("[Circle file (%dx%d)]:%s\n", w_circle, h_circle, file_name.c_str());
 	}
@@ -1839,7 +2020,10 @@ bool Filter::circle(uint8_t** dst, double** kernel, int w_circle, int h_circle, 
 			free(circle);
 		return false;
 	}
-
+	
+	//
+	//exit if no need to dive into DFT or DCT
+	//
 	if (H==NULL && Y==NULL && dst==NULL && kernel == NULL) { 
 		if (circle)
 			free(circle);
@@ -1847,8 +2031,9 @@ bool Filter::circle(uint8_t** dst, double** kernel, int w_circle, int h_circle, 
 		return true;
 	}
 
-	LOG("Make kernel as h and H if asked...\n");
-	if (dst) {
+	//copy circle raw image to callee
+	if (dst != NULL) {
+		LOG("Copy circle raw image to outside...\n");
 		if (*dst != NULL) {
 			memset(*dst, 0, sizeof(uint8_t)*w_img*h_img);
 			for (int j=0; j<h_circle; j++) {
@@ -1860,39 +2045,36 @@ bool Filter::circle(uint8_t** dst, double** kernel, int w_circle, int h_circle, 
 		else {
 			return false;
 		} 
+		file_name = "C:\\src\\amo\\DIP\\Debug\\circle_img";
+		if (is_inverse_psf)
+			file_name += "_inverse";
+		file_name += ".raw";
+		remove(file_name.c_str());
+		fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
+		if (fos.fail()) {
+			LOG("%s\n", strerror(errno));
+			return false;
+		}
+		else fos.clear();
+		if (dst && *dst)
+			fos.write((char*)(*dst), sizeof(char)*(double)w_img*(double)h_img);
+		fos.close();
+		LOG("[Circle image file (%d x %d)]:%s\n", w_img, h_img, file_name.c_str());
 	}
 
-	string file_name = "C:\\src\\amo\\DIP\\Debug\\circle_img";
-	if (is_inverse_psf)
-		file_name += "_inverse";
-	file_name += ".raw";
-	remove(file_name.c_str());
-	fos.open(file_name, fstream::in | fstream::out | fstream::trunc | fstream::binary);
-	if (fos.fail()) {
-		LOG("%s\n", strerror(errno));
-		return false;
-	}
-	else fos.clear();
-	if (dst && *dst)
-		fos.write((char*)(*dst), sizeof(char)*(double)w_img*(double)h_img);
-	fos.close();
-	LOG("[Circle image file (%d x %d)]:%s\n", w_img, h_img, file_name.c_str());
-
-	double* h = (double*) malloc(sizeof(double)*w_img*h_img);
+	//make h which is the kernel
+	LOG("Make h...\n");
+	h = (double*) malloc(sizeof(double)*w_img*h_img);
+	h_normed = NULL;
 	for (int p = 0; p<w_img*h_img; p++) {
-		if (&((*dst)[p]) != NULL) {
-			h[p] = (double)(*dst)[p];
+		if (&((circle)[p]) != NULL) {
+			h[p] = (double)circle[p];
 		}
 	}
-	double* h_normed = NULL;
-	for (int p = 0; p<w_img*h_img; p++) {
-		if (&((*dst)[p]) != NULL) {
-			h[p] = (*dst)[p];
-		}
-	}
-
-	//provide H of DFT 
+	
+	//provide H for DFT 
 	if (H != NULL) {
+		LOG("Make H for DFT...\n");
 		if (is_normalize_and_element_wise_divided_by_sum) { //usaully for fft of algo. kernel
 			normalize(h_normed, h, w_img, h_img, 0, 1); 
 			if (h_normed == NULL || h == NULL) return false;
@@ -1943,8 +2125,9 @@ bool Filter::circle(uint8_t** dst, double** kernel, int w_circle, int h_circle, 
 			free(spec);
 	}
 
-	//provide Y of DCT 
+	//provide Y for DCT 
 	if (Y != NULL) {
+		LOG("Make H for DCT...\n");
 		if (is_normalize_and_element_wise_divided_by_sum) { //usaully for fft of algo. kernel
 			normalize(h_normed, h, w_img, h_img, 0, 1); 
 			if (h_normed == NULL || h == NULL) return false;
@@ -1964,7 +2147,7 @@ bool Filter::circle(uint8_t** dst, double** kernel, int w_circle, int h_circle, 
 
 		LOG("DCT of h... (N:%d, M:%d)\n", w_img, h_img);
 		DCT dct;
-		dct.dct2(Y, h, w_img, h_img, window, group);
+		dct.dct2(Y, h, w_img, h_img, window);
 
 		double* spec = NULL;
 		double w_spec;
@@ -1998,7 +2181,7 @@ bool Filter::circle(uint8_t** dst, double** kernel, int w_circle, int h_circle, 
 	//make kernel as h only
 	if (Y == NULL && H == NULL) {
 		if (kernel != NULL) {
-			if (is_normalize_and_element_wise_divided_by_sum) { //usaully for fft of algo. kernel
+			if (is_normalize_and_element_wise_divided_by_sum) { //kernel used to do filterring by conv or fft
 				normalize(h_normed, h, w_img, h_img, 0, 1); 
 				if (h_normed == NULL || h == NULL) return false;
 				memcpy(h, h_normed, sizeof(double)*w_img*h_img);
@@ -2017,9 +2200,13 @@ bool Filter::circle(uint8_t** dst, double** kernel, int w_circle, int h_circle, 
 		}	
 	} 
 
-
 	if (circle)
 		free(circle);
+	if (h)
+		free(h);
+	if (h_normed)
+		free(h_normed);
+
 	return true;
 }
 
