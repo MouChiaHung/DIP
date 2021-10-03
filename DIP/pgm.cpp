@@ -1358,15 +1358,33 @@ bool PGM::filtering_by_DFT(double**dst, double* kernel, complex<double>* kernel_
 	return true;
 }
 
-bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int w_kernel, int h_kernel, int window, int group, bool dct_by_raw_filtered, bool do_inverse_transform) {
+
+/**
+  * N*N DCT by (2N)*(2N) FFT
+  * X_EXT = fft(x_ext);
+  * k = (0:1:(2*N)-1);
+  * W = cos(2*pi*(0.5*k)/(2*N))-i*sin(2*pi*(0.5*k)/(2*N));
+  * factor = 0.5.*W;
+  * X_DCT_2N = real(0.5.*W.*X_EXT);
+  * X_DCT_N_scale = sqrt(2/N).*[sqrt(1/2), ones(1, N-1)];
+  * X_DCT_N = X_DCT_N_scale.*X_DCT_2N(1:N);
+  * 
+  * (2N)*(2N) FFT by N*N DCT for X
+  * X_DCT_N = dct(x);
+  * k = (0:1:N-1);
+  * W = cos(2*pi*(0.5*k)/(2*N)) + i*sin(2*pi*(0.5*k)/(2*N));
+  * W = [2, sqrt(2.*(ones(1, N-1)))]*2.*W;
+  * X_EXT_DFT_N = W.*X_DCT_N;
+  * X_EXT_DFT_2N = [X_EXT_DFT_N, 0, conj(X_EXT_DFT_N(end:-1:2))];
+ */
+bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int w_kernel, int h_kernel, bool dct_by_raw_filtered, bool do_even_extension, bool do_inverse_transform) {
 	if (raw == NULL)	
 		return false;
 	if (size <= 0)	
 		return false;
 	if (depth != 1 && depth!= 2) 
 		return false;
-	if (group > (w_kernel) || group > (h_kernel)) 
-		return false;
+
 	string file_name = "";
 	ofstream fos;
 	double* image = NULL;
@@ -1387,33 +1405,50 @@ bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int 
 	int n = 0;
 	int m = 0;
 
+	LOG("Prepare im...\n");
+	Filter f_im_maker;
+
 	if (dct_by_raw_filtered) {
-		n = this->w_filtered;
-		m = this->h_filtered;
-		image = this->raw_filtered;
+		LOG("Prepare im with filtered image...\n");
+		if (do_even_extension) {
+			LOG("Prepare im with even extension...\n");
+			if (!f_im_maker.mirrorPadding(&image, this->raw_filtered, &n, &m, this->w_filtered, this->h_filtered)) {
+				return false;
+			}
+		}
+		else {
+			LOG("Prepare im without even extension...\n");
+			n = this->width;
+			m = this->height;
+			image = (double*)malloc(sizeof(double)*(n)*(m));
+			memset(image, 0, sizeof(double)*(n)*(m));
+			if (!f_im_maker.copy(image, this->raw_filtered, n, m, this->w_filtered, this->h_filtered)) {
+				return false;
+			}
+		}
 	}
 	else {
-		n = w_kernel;
-		m = h_kernel;
-		image = (double*)malloc(sizeof(double)*(this->width)*(this->height));
-		if (image == NULL)
+		LOG("Prepare im with raw image...\n");
+		double* image_tmp = (double*)malloc(sizeof(double)*(this->width)*(this->height));
+		if (image_tmp == NULL)
 			return false;
-		memset(image, 0, sizeof(double)*(this->width)*(this->height));
+		memset(image_tmp, 0, sizeof(double)*(this->width)*(this->height));
 
+		//copy uint8 raw to be double im
 		int k = 0;
 		for (int j=0; j<(this->height); j++) {
 			for (int i=0; i<(this->width); i++) {
 				if (depth == 2) {
-					if (image+k) {
-						image[k] = ((uint16_t*)(this->raw))[(i+j*(this->width))];
+					if (image_tmp+k) {
+						image_tmp[k] = ((uint16_t*)(this->raw))[(i+j*(this->width))];
 					}
 					else {
 						return false;
 					}
 				}
 				else if (depth == 1) {
-					if (image+k) {
-						image[k] = ((uint8_t*)(this->raw))[(i+j*(this->width))];
+					if (image_tmp+k) {
+						image_tmp[k] = ((uint8_t*)(this->raw))[(i+j*(this->width))];
 					}
 					else {
 						return false;
@@ -1422,8 +1457,42 @@ bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int 
 				k++;			
 			}
 		}
+
+		if (do_even_extension) {
+			LOG("Prepare im with even extension...\n");
+			double* image_tmp_crop = (double*)malloc(sizeof(double)*(w_kernel)*(h_kernel));
+			if (image_tmp == NULL)
+				return false;
+			memset(image_tmp_crop, 0, sizeof(double)*(w_kernel)*(h_kernel));
+			//crop double im
+			if (!f_im_maker.copy_center_around(image_tmp_crop, image_tmp, w_kernel, h_kernel, this->width, this->height)) {
+				return false;
+			}	
+			if (!f_im_maker.mirrorPadding(&image, image_tmp_crop, &n, &m, w_kernel, h_kernel)) {
+				return false;
+			}
+			if (image_tmp_crop)
+				free(image_tmp_crop);
+		}
+		else {
+			LOG("Prepare im without even extension...\n");
+			n = this->width;
+			m = this->height;
+			image = (double*)malloc(sizeof(double)*(n)*(m));
+			if (image == NULL)
+				return false;
+			memset(image, 0, sizeof(double)*(n)*(m));
+			if (!f_im_maker.copy(image, image_tmp, n, m, this->width, this->height)) {
+				return false;
+			}
+		}
+		if (image_tmp)
+			free(image_tmp);
 	}
 
+	LOG("Prepare im done\n");
+
+	LOG("Prepare kernel...\n");
 	if (kernel_DCT != NULL) {
 		LOG("DCT of kernel assigned... (N:%d, M:%d)\n", n, m);
 		H = kernel_DCT;
@@ -1441,29 +1510,25 @@ bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int 
 		if (h == NULL)
 			return false;
 		memset(h, 0, sizeof(double)*n*m);
-		if (!f.copy_center_around(h, kernel, n, m, w_kernel, h_kernel)) {
-			LOG("copy_center_around failed\n");
+		if (!f.copy(h, kernel, n, m, w_kernel, h_kernel)) {
+			LOG("copy failed\n");
 			return false;
 		}
 
 		LOG("DCT of kernel... (N:%d, M:%d)\n", n, m);
 		DCT dct_kernel;
-		if (!dct_kernel.dct2(&H, h, n, m, window, group)) {
+		if (!dct_kernel.dct2(&H, h, n, m)) {
 			LOG("dct2 failed\n");
 			return false;
 		}
 
 		if (do_inverse_transform) {
 			LOG("**** Do inverse transform ****\n");
-			double a = 0;
-			double b = 0;
+			double nsr = 0.06;
+			nsr = 0;
 			double c = 0;
 			for (int k=0; k<n*m; k++) {
-				a = H[k]*H[k];
-				if (a == 0.0f)
-					a = 1.0f;
-				b = H[k];
-				c = b/a;
+				c = 1.0/(H[k]+nsr);
 				H[k] = c;
 			}
 		}
@@ -1516,6 +1581,7 @@ bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int 
 	catch (exception ex) {
 		return false;
 	}
+	LOG("Prepare kernel done\n");
 
 	LOG("DCT of image... (N:%d, M:%d)\n", n, m);
 
@@ -1525,19 +1591,19 @@ bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int 
 	if (im == NULL)
 		return false;
 	memset(im, 0, sizeof(double)*n*m);
-#if 1 //copy center around to have more symmetric im
+#if 0 //copy center around to have more symmetric im
 	if (!f.copy_center_around(im, image, n, m, (this->width), (this->height))) {
 		LOG("copy_center_around failed\n");
 		return false;
 	}
 #else
-	if (!f.copy(im, image, n, m, (this->width), (this->height))) {
+	if (!f.copy(im, image, n, m, n, m)) {
 		LOG("copy failed\n");
 		return false;
 	}
 #endif
 	DCT dct_im;
-	if (!dct_im.dct2(&I, im, n, m, window, group)) {
+	if (!dct_im.dct2(&I, im, n, m)) {
 		LOG("dct2 failed\n");
 		return false;
 	}
@@ -1591,13 +1657,13 @@ bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int 
 	LOG("DCT of image done (w_spec_I:%d, h_spec_I:%d)\n", (int)w_spec_I, (int)h_spec_I);
 
 	LOG("Product by I(N:%d, M:%d) .* H(N:%d, M:%d)...\n", n, m, n, m);
-	Y = (double*)malloc(sizeof(complex<double>)*n*m);
+	Y = (double*)malloc(sizeof(double)*n*m);
 	if (Y == NULL)
 		return false;
-	memset(Y, 0,sizeof(complex<double>)*n*m);
+	memset(Y, 0,sizeof(double)*n*m);
 	Filter f_prod;
 	if (!f_prod.element_wise_multiply(Y, I, H, n, m)) {
-		LOG("element_wise_complex_multiply failed\n");
+		LOG("element_wise_multiply failed\n");
 		return false;
 	}
 
@@ -1617,7 +1683,7 @@ bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int 
 	double w_idct = 0;
 	double h_idct = 0;
 	DCT dct_forY(n, m, Y);
-	if (!dct_forY.idct2(y, Y, &w_idct, &h_idct, window, group)) {
+	if (!dct_forY.idct2(y, Y, &w_idct, &h_idct)) {
 		LOG("idct2 failed\n");
 		return false;
 	}
@@ -1674,6 +1740,20 @@ bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int 
 		free(H);	
 	if (spec)
 		free(spec);	
+	if (spec_I)
+		free(spec_I);	
+	if (spec_H)
+		free(spec_H);	
+	if (image)
+		free(image);	
+	if (im)
+		free(im);
+	if (I)
+		free(I);	
+	if (y)
+		free(y);
+	if (Y)
+		free(Y);
 	return true;
 }
 
