@@ -24,6 +24,8 @@ public:
 
 	Filter(void);
 	~Filter(void);
+	bool log2(int* dst, int src);
+	bool nextPowerToFloorLog2(int* dst, int src);
 	bool element_wise_multiply(double* dst, double* img, double* ker, int w, int h);
 	bool element_wise_complex_multiply(complex<double>* dst, complex<double>* img, complex<double>* ker, int w, int h);
 	bool element_wise_complex_multiply(double** dst_re, double** dst_im
@@ -31,6 +33,7 @@ public:
 										 , double*  ker_re, double*  ker_im
 										 , int w, int h);
 	bool cast(uint8_t*& dst, double* src, int width, int height);
+	bool mirrorPadding(double** pdst, double* src, int* w_dst, int* h_dst, int w_src, int h_src);
 	bool zeroPadding(double*& dst, double* src, int w, int h, int w_append, int h_append, int* w_dst, int* h_dst);
 	bool cutoff(double*& dst, double* src, int w, int h, int w_remove, int h_remove, int* w_dst, int* h_dst);
 	bool rotate90(uint8_t*& dst, uint8_t* src, int w, int h, int* w_dst, int* h_dst);
@@ -51,7 +54,7 @@ public:
 	bool sobel(double*& dst, double* src, int width, int height, std::string file);
 	bool gradient(double*& magnitude, double*& orientation, double* src, int width, int height, std::string file);
 	bool laplacian(double*& magnitude, double* src, int width, int height, std::string file);
-	bool circle(uint8_t** dst, double** kernel, int w_circle, int h_circle, int r_circle, int window, int w_img, int h_img, complex<double>** H, double** Y, int group, bool is_norm_kernel, bool is_inverse_psf);
+	bool circle(uint8_t** dst, double** kernel, int w_circle, int h_circle, int r_circle, int window, int w_img, int h_img, complex<double>** H, double** Y, bool is_norm_kernel, bool is_inverse_psf, bool do_DCT);
 	bool rectangle(uint8_t** dst, int w_rect, int h_rect, int r_rect, int w_img, int h_img, complex<double>** H, bool dft_by_normalized);
 	bool cos_x(uint8_t** dst, int w_func, int h_func, int dft_window, int w_img, int h_img, double freq, double phi, complex<double>** H, bool dft_by_normalized);
 };
