@@ -11,7 +11,7 @@
 #### [10] Edge detection
 #### [11] 2D Gradient
 #### [12] Discrete cosine transform
-#### [13] Blurring and deblurring
+#### [13] Blurring and deblurring via DFT and DCT
 
 ## Floyd Steinberg Dithering
 ![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/FloydSteinbergDithering.png)
