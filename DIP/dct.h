@@ -26,6 +26,7 @@ public:
 	bool dct2(double** dst, double* src, double w, double h, double window);
 	bool dct2(double** dst, double* src, double w, double h, double window, double group);
 	bool idct2(double*& dst, double* w, double* h);
+	bool idct2(double*& dst, double* matrix, double* w, double* h);
 	bool idct2(double*& dst, double* w, double* h, double group);
 	bool idct2(double*& dst, double* w, double* h, double window, double group);
 	bool idct2(double*& dst, double* matrix, double* w, double* h, double window, double group);
