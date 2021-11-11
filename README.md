@@ -14,27 +14,27 @@
 #### [13] Blurring and deblurring via DFT and DCT
 
 ## Floyd Steinberg Dithering
-![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/FloydSteinbergDithering.png)
+![image](https://github.com/MouChiaHung/DIP/blob/master/forReadMe/FloydSteinbergDithering.png)
 
 ## 2D Convolution
-![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/conv.jpg)
+![image](https://github.com/MouChiaHung/DIP/blob/master/forReadMe/conv.jpg)
 
 ## 2D Fourier transform analysis
-![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/denoised.jpg)
+![image](https://github.com/MouChiaHung/DIP/blob/master/forReadMe/denoised.jpg)
 
 ## Gaussian filter
-![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/Gaussion%20distribution%202D.jpg)
+![image](https://github.com/MouChiaHung/DIP/blob/master/forReadMe/Gaussion%20distribution%202D.jpg)
 
 ## Edge detection
-![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/sobel_filter.jpg)
+![image](https://github.com/MouChiaHung/DIP/blob/master/forReadMe/sobel_filter.jpg)
 
-![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/sobel_filter_edge.jpg)
+![image](https://github.com/MouChiaHung/DIP/blob/master/forReadMe/sobel_filter_edge.jpg)
 
 ## 2D Gradient
-![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/gradient_2object.jpg)
+![image](https://github.com/MouChiaHung/DIP/blob/master/forReadMe/gradient_2object.jpg)
 
 ## Discrete cosine transform
-![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/my_dct_and_idct_lp_filter.jpg)
+![image](https://github.com/MouChiaHung/DIP/blob/master/forReadMe/my_dct_and_idct_lp_filter.jpg)
 
 ## Blurring and deblurring
-![image](https://github.com/MouChiaHung/DIP/blob/master/Debug/lena_deconv_psf_with_lp.jpg)
+![image](https://github.com/MouChiaHung/DIP/blob/master/forReadMe/lena_deconv_psf_with_lp.jpg)
