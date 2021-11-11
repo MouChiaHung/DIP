@@ -7,12 +7,14 @@ row=79; col=79;
 
 file_name = 'lena';
 row_pgm=256; col_pgm=256;
+
 %
 %raw data
 file_raw = append(file_name,'_im_DftIDft.raw');
 fin=fopen(file_raw,'r');
-if (contains(file_name,'16bitsGrayScale')) 
-    R=fread(fin,row*col,'uint16=>uint8'); 
+if (contains(file_name,'finger')) 
+    %R=fread(fin,row*col,'uint16=>uint8'); 
+    R=fread(fin,row*col,'uint8=>uint8'); 
 else
     R=fread(fin,row*col,'uint8=>uint8'); 
 end
@@ -227,7 +229,7 @@ imwrite((im5), 'im.tif');
 
 %{
 figure('Name','im','NumberTitle','off');
-im5 = (imread('xxx.tif'));
+im5 = (imread('finger.tif'));
 imshow(im5);
 IM5 = fft2(im5);
 IM5_real = real(IM5);

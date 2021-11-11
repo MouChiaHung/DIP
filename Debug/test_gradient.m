@@ -9,7 +9,6 @@ row=256; col=256;
 file_raw = 'cell';
 row=199; col=200;
 
-
 file_raw = 'virus';
 row=212; col=219;
 
@@ -78,7 +77,7 @@ return;
 tmp = file_raw;
 file_raw = append(tmp,'');
 fin=fopen(file_raw,'r');
-if (contains(file_raw,'16bitsGrayScale')) 
+if (contains(file_raw,'finger')) 
     r=fread(fin,row*col,'uint16=>uint8'); 
 else
     r=fread(fin,row*col,'uint8=>uint8'); 
@@ -95,7 +94,7 @@ show(r, 'imgaussfilt', row, col);
 tmp = file_raw;
 file_raw_gaussian = append(tmp,'Gaussianed');
 fin=fopen(file_raw_gaussian,'r');
-if (contains(file_raw_gaussian,'16bitsGrayScale')) 
+if (contains(file_raw_gaussian,'finger')) 
     Raw=fread(fin,row*col,'uint8=>uint8'); 
 else
     Raw=fread(fin,row*col,'uint8=>uint8'); 

@@ -1,35 +1,30 @@
-%close all;
+close all;
 clear;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PSF LAB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 RUN_HIST = 0;
 RUN_CIRCLE = 0;
-RUN_DFT  = 0;
-RUN_IDFT  = 0;
-RUN_FILTER_DFT = 1;
-RUN_FILTER_DCT = 0;
-RUN_DECONV_DFT = 0;
-RUN_DECONV_DCT = 0;
-RUN_PSF_Kernel_lab = 0;
+RUN_DFT    = 0;
+RUN_IDFT   = 0;
 RUN_KERNEL_DIY = 0;
-
 RUN_DCT_IDCT = 0;
+RUN_FILTER_DFT = 0;
+RUN_FILTER_DCT = 1;
+RUN_CIRCLE_DFT = 0;
+RUN_CIRCLE_DCT = 0;
 
-%file_name = '2object';
-%row=320; col=240;
+RUN_GRAY_SCALE_16BITS = 0;
 
 file_name = 'lena';
-row=256; col=256;   
+row=256; col=256;
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % HIST lab
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 if (RUN_HIST == 1)
-%
-
-%
 file = append(file_name,'_hist.raw');
 fin=fopen(file,'r');
 S=fread(fin,row*col,'double'); 
@@ -42,7 +37,7 @@ title('Histogram equalization');
 %
 file = append(file_name,'_im_histed.raw');
 fin=fopen(file,'r');
-if (contains(file_name,'16bitsGrayScale')) 
+if (contains(file_name,'finger')) 
     raw=fread(fin,row*col,'uint16=>uint8'); 
 else
     raw=fread(fin,row*col,'uint8=>uint8'); 
@@ -57,7 +52,7 @@ title('Raw of Histogram equalization');
 %
 file = append(file_name);
 fin=fopen(file,'r');
-if (contains(file_name,'16bitsGrayScale')) 
+if (contains(file_name,'finger')) 
     raw=fread(fin,row*col,'uint16=>uint8'); 
 else
     raw=fread(fin,row*col,'uint8=>uint8'); 
@@ -71,91 +66,85 @@ title('Raw');
 %
 return;
 end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CIRCLE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 if (RUN_CIRCLE)
-%
-if (RUN_DECONV_DFT == 1 || RUN_FILTER_DFT == 1)
-row_circle=179; col_circle=79;
-row=179; col=79;
-row_dft=179; col_dft=79;
-else 
-row_circle=128; col_circle=128;
-row=128; col=128;
-end
-file_circle = 'circle_img.raw';
-fin=fopen(file_circle,'r');
-R_circel=fread(fin,row_circle*col_circle,'uint8=>uint8'); 
-ZRaw_circle=reshape(R_circel,row_circle,col_circle);
-ZRaw_circle=ZRaw_circle';
-fclose(fin);
+    if (RUN_FILTER_DFT == 1)
+        row_circle=179; 
+        col_circle=79;
+        row=179; 
+        col=79;
+    elseif (RUN_FILTER_DCT == 1)
+        row_circle=180; 
+        col_circle=80;
+        row=180; 
+        col=180;
+    else 
+        row_circle=0; 
+        col_circle=0;
+        row=0; 
+        col=0;
+    end
 
-figure('Name','Cir PSF','NumberTitle','off');
-subplot(2,2,1);
-imshow(ZRaw_circle);
-title('circle')
+    file_circle = 'circle_img.raw';
+    fin=fopen(file_circle,'r');
+    R_circel=fread(fin,row_circle*col_circle,'uint8=>uint8'); 
+    ZRaw_circle=reshape(R_circel,row_circle,col_circle);
+    ZRaw_circle=ZRaw_circle';
+    fclose(fin);
 
-file = 'circle_img.raw';
-fin=fopen(file,'r');
-R_h=fread(fin,row*col,'uint8=>uint8'); 
-ZRaw_h=reshape(R_h,row,col);
-ZRaw_h=ZRaw_h';
-fclose(fin);
+    figure('Name','Cir PSF','NumberTitle','off');
+    subplot(2,2,1);
+    imshow(ZRaw_circle);
+    title('circle')
 
-subplot(2,2,2);
-imshow(ZRaw_h);
-title('my h')
+    file = 'circle_img.raw';
+    fin=fopen(file,'r');
+    R_h=fread(fin,row*col,'uint8=>uint8'); 
+    ZRaw_h=reshape(R_h,row,col);
+    ZRaw_h=ZRaw_h';
+    fclose(fin);
 
-if (RUN_DECONV_DFT == 1 || RUN_FILTER_DFT == 1)
-%DFT spectrum
-file_H = 'circle_DFTSpec.raw';
-fin=fopen(file_H,'r');
-spec_circle=fread(fin,row*col,'double'); 
-S_circle_DFTSpec=(spec_circle);
-S_circle_DFTSpec=reshape(S_circle_DFTSpec,row,col);
-S_circle_DFTSpec=S_circle_DFTSpec';
-S_circle_DFTSpec = fftshift(S_circle_DFTSpec);
-fclose(fin);
-subplot(2,2,3);
-imshow(log(abs(S_circle_DFTSpec)), []);
-title('My DFT H Spectrum');
+    subplot(2,2,2);
+    imshow(ZRaw_h);
+    title('my h')
 
-H_matlab = fft2(ZRaw_h);
-H_matlab = fftshift(H_matlab);
-subplot(2,2,4);
-imshow(log(abs(H_matlab)), []);
-title('Matlab fft2 of my h');
+    if (RUN_CIRCLE_DFT == 1)
+        %DFT spectrum
+        file_H = 'circle_DFTSpec.raw';
+        fin=fopen(file_H,'r');
+        spec_circle=fread(fin,row*col,'double'); 
+        S_circle_DFTSpec=(spec_circle);
+        S_circle_DFTSpec=reshape(S_circle_DFTSpec,row,col);
+        S_circle_DFTSpec=S_circle_DFTSpec';
+        S_circle_DFTSpec = fftshift(S_circle_DFTSpec);
+        fclose(fin);
+        subplot(2,2,3);
+        imshow(log(abs(S_circle_DFTSpec)), []);
+        title('My DFT H Spectrum');
 
-%{
-H_matlab = fft2(ZRaw_circle);
-H_matlab_real = real(H_matlab);
-figure('Name','H_matlab_real','NumberTitle','off');
-H_matlab_real = fftshift(H_matlab_real);
-imshow(log(abs(H_matlab_real)), []);
-title('H matlab');
-%}
-else
-%DCT spectrum
-file_H_DCT = 'circle_DCTSpec.raw';
-fin=fopen(file_H_DCT,'r');
-spec_circle_DCT=fread(fin,row*col,'double'); 
-S_circle_DCTSpec=(spec_circle_DCT);
-S_circle_DCTSpec=reshape(S_circle_DCTSpec,row,col);
-%S_circle_DCTSpec=S_circle_DCTSpec';
-fclose(fin);
-subplot(2,2,3);
-imshow((abs(S_circle_DCTSpec)), []);
-title('My DCT H Spectrum');
-end
-H_matlab = fft2(ZRaw_h);
-H_matlab = fftshift(H_matlab);
-subplot(2,2,4);
-imshow(log(abs(H_matlab)), []);
-title('Matlab fft2 of my h');
-%
+        H_matlab = fft2(ZRaw_h);
+        H_matlab = fftshift(H_matlab);
+        subplot(2,2,4);
+        imshow(log(abs(H_matlab)), []);
+        title('Matlab fft2 of my h');
+    end
+
+    if (RUN_CIRCLE_DCT == 1)
+        %DCT spectrum
+        file_H_DCT = 'circle_DCTSpec.raw';
+        fin=fopen(file_H_DCT,'r');
+        spec_circle_DCT=fread(fin,row*col,'double'); 
+        S_circle_DCTSpec=(spec_circle_DCT);
+        S_circle_DCTSpec=reshape(S_circle_DCTSpec,row,col);
+        %S_circle_DCTSpec=S_circle_DCTSpec';
+        fclose(fin);
+        subplot(2,2,3);
+        imshow((abs(S_circle_DCTSpec)), []);
+        title('My DCT H Spectrum');
+    end
 end
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -164,12 +153,18 @@ end
 if (RUN_DFT == 1)
 %
 row_dft=179; col_dft=79;
+row_dft=179+1; col_dft=79+1;
 
 %raw data of filtered
 file_raw_dft = append(file_name,'_im_PGMDft.raw');
 fin=fopen(file_raw_dft,'r'); 
-if (contains(file_raw_dft,'16bitsGrayScale')) 
-    R_im=fread(fin,row_dft*col_dft,'uint16=>uint8'); 
+
+if (contains(file_raw_dft,'finger')) 
+    if (RUN_GRAY_SCALE_16BITS)
+        R_im=fread(fin,row_dft*col_dft,'uint16=>uint8'); 
+    else
+        R_im=fread(fin,row_dft*col_dft,'uint8=>uint8'); 
+    end
 else
     R_im=fread(fin,row_dft*col_dft,'uint8=>uint8'); 
 end
@@ -198,30 +193,39 @@ title('DFT Spectrum');
 %DFT real
 file_raw_dft = append(file_name,'DFTReal.raw');
 fin=fopen(file_raw_dft,'r');
-spec=fread(fin,row_dft*col_dft,'double'); 
-S=(spec);
-S=reshape(S,row_dft,col_dft);
-S=S';
-S = fftshift(S);
+spec_re=fread(fin,row_dft*col_dft,'double'); 
+S_re=(spec_re);
+S_re=reshape(S_re,row_dft,col_dft);
+S_re=S_re';
+S_re = fftshift(S_re);
 fclose(fin);
 subplot(3,2,5);
-imshow(log(abs(S)), []);
+imshow(log(abs(S_re)), []);
 title('DFT Real');
 
 %DFT imag
 file_raw_dft = append(file_name,'DFTImag.raw');
 fin=fopen(file_raw_dft,'r');
-spec=fread(fin,row_dft*col_dft,'double'); 
-S=(spec);
-S=reshape(S,row_dft,col_dft);
-S=S';
-S = fftshift(S);
+spec_imag=fread(fin,row_dft*col_dft,'double'); 
+S_imag=(spec_imag);
+S_imag=reshape(S_imag,row_dft,col_dft);
+S_imag=S_imag';
+S_imag = fftshift(S_imag);
 fclose(fin);
 subplot(3,2,6);
-imshow(log(abs(S)), []);
+imshow(log(abs(S_imag)), []);
 title('DFT Imag');
 %
+
+figure('Name','ifft2imag','NumberTitle','off');
+s_imag = abs(ifft2(1i.*S_imag)); 
+imshow((s_imag), [0,255]);
+figure('Name','ifft2real','NumberTitle','off');
+s_re = abs(ifft2(S_re)); 
+imshow((s_re), [0,255]);
+return;
 end
+
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % IDFT
@@ -240,118 +244,7 @@ title('IDFT')
 end
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% DECONV BY DFT
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (RUN_DECONV_DFT)
-
-%raw data
-if false
-    file_raw_dft = append(file_name,'_im_PGMDft.raw');
-    fin=fopen(file_raw_dft,'r'); 
-    if (contains(file_raw_dft,'16bitsGrayScale')) 
-        R_im=fread(fin,row*col,'uint16=>uint8'); 
-    else
-        R_im=fread(fin,row*col,'uint8=>uint8'); 
-    end
-    ZRaw_im=reshape(R_im,row_dft,col_dft);
-    ZRaw_im=ZRaw_im';
-    fclose(fin);
-else
-    file_raw_dft = append(file_name,'_im_Filter.raw');
-    fin=fopen(file_raw_dft,'r');
-    ZRaw_im=fread(fin,row*col,'double'); 
-    ZRaw_im=reshape(ZRaw_im,row,col);
-    ZRaw_im=ZRaw_im';
-    fclose(fin);
-end
-figure('Name', 'Deconv','NumberTitle','off');
-subplot(3,3,1);
-imshow(ZRaw_im, [0,255]);
-title('Raw image to be filtered');    
-
-
-%raw data of filtered
-file_raw_dft_filtered = append(file_name,'Filtered');
-fin=fopen(file_raw_dft_filtered,'r');
-
-R_im_filtered=fread(fin,row*col,'uint8=>uint8'); 
-
-ZRaw_im_filtered=reshape(R_im_filtered,row,col);
-ZRaw_im_filtered=ZRaw_im_filtered';
-fclose(fin);
-
-subplot(3,3,2);
-
-imshow(ZRaw_im_filtered);
-title('Filtered')
-
-%DFT spectrum
-file_raw_dft = append(file_name,'G_Spec.raw');
-fin=fopen(file_raw_dft,'r');
-spec=fread(fin,row_dft*col_dft,'double'); 
-S=(spec);
-S=reshape(S,row_dft,col_dft);
-S=S';
-S = fftshift(S);
-fclose(fin);
-subplot(3,3,6);
-imshow(log(abs(S)), []);
-title('DFT Spec of my deconv');
-
-subplot(3,3,4);
-imshow(ZRaw_h);
-title('My PSF kernel')
-
-file = append(file_name,'Deconv.raw');
-fin=fopen(file,'r');
-R=fread(fin,row*col,'uint8=>uint8'); 
-ZRaw_Deconv=reshape(R,row_dft,col_dft);
-ZRaw_Deconv=ZRaw_Deconv';
-
-fclose(fin);
-subplot(3,3,5);
-imshow((ZRaw_Deconv));
-title('My deconv')
-
-subplot(3,3,3);
-imshow(log(abs(S_circle_DFTSpec)), []);
-title('DFT Spec of my PSF kernel');
-
-h = im2double(ZRaw_circle);
-%h = im2double(ZRaw_rect);
-%h = im2double(ZRaw_cosx);
-img = im2double(ZRaw_im);
-blurred = imfilter(img, h, 'conv', 'circular');
-subplot(3,3,7);
-blurred_norm = 255*mat2gray(blurred);
-imshow(blurred_norm, [0,255]);
-title('Matlab blurred with my PSF');
-
-ZRaw_im_filtered_double = 255*im2double(ZRaw_im_filtered);
-
-wnr2 = deconvwnr(ZRaw_im_filtered_double, h, 0.1);
-%wnr2 = deconvwnr(blurred, h, 0.1);
-subplot(3,3,8);
-imshow(wnr2, []);
-title('Matlab deconvwnr with my PSF');
-
-H_matlab = fft2(wnr2);
-H_matlab = fftshift(H_matlab);
-subplot(3,3,9);
-imshow(log(abs(H_matlab)), []);
-title('Matlab fft2 of Deconvwnr');
-
-%filtered data
-file_raw_filtered = append(file_name,'Filtered');
-fin=fopen(file_raw_filtered,'r');
-Filtered=fread(fin,row*col,'uint8=>uint8');
-Filtered=reshape(Filtered,row,col);
-Filtered=Filtered';
-fclose(fin);
-%show(Filtered, file_raw_filtered, row, col);
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Filter BY DFT
+% Filter BY DFT DFT DFT DFT DFT DFT DFT DFT DFT DFT DFT DFT DFT DFT DFT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (RUN_FILTER_DFT)
 file_name = 'lena';
@@ -547,7 +440,6 @@ figure('name',' import','NumberTitle','off');
 imshow(S, []);
 title('kernel imported'); 
 
-
 %lab of DFT
 I_DFT_matlab = fft2(Zim_filteringByDFT_img);
 H_DFT_matlab = fft2(Zim_filteringByDFT_kernel);
@@ -585,19 +477,19 @@ file_name = 'lena';
 row=256; col=256;
 row=255; col=255;
 
-window = 63;
+row_conv_image =179; col_conv_image =79;
+row_conv_kernel=79;  col_conv_kernel=79;
 
 row_dct=row; col_dct=col;
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % filtering by convolution
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %raw img used by convolution
 file = append(file_name,'_im_Filter.raw');
 fin=fopen(file,'r');
-Rim=fread(fin,row*col,'double'); 
+Rim=fread(fin,row_conv_image*col_conv_image,'double'); 
 fclose(fin);
-Zim=reshape(Rim,row,col);
+Zim=reshape(Rim,row_conv_image,col_conv_image);
 Zim=Zim';
 figure('Name', 'im_Filter','NumberTitle','off');
 subplot(4,3,1);
@@ -607,9 +499,9 @@ title('** Raw image to be filtered of filtering by conv **');
 %kernel used by convolution
 file = append(file_name,'_kernel_Filter.raw');
 fin=fopen(file,'r');
-Rim_kernel=fread(fin,window*window,'double'); 
+Rim_kernel=fread(fin,row_conv_kernel*col_conv_kernel,'double'); 
 fclose(fin);
-Zim_kernel=reshape(Rim_kernel,window,window);
+Zim_kernel=reshape(Rim_kernel,row_conv_kernel,col_conv_kernel);
 Zim_kernel=Zim_kernel';
 subplot(4,3,2);
 imshow(Zim_kernel, []);
@@ -618,9 +510,9 @@ title('** kernel of filtering by conv **');
 %img filtered by convolution
 file = append(file_name,'Filtered');
 fin=fopen(file,'r');
-Rfiltered=fread(fin,row*col,'uint8=>uint8'); 
+Rfiltered=fread(fin,row_conv_image*col_conv_image,'uint8=>uint8'); 
 fclose(fin);
-Zfiltered=reshape(Rfiltered,row,col);
+Zfiltered=reshape(Rfiltered,row_conv_image,col_conv_image);
 Zfiltered=Zfiltered';
 subplot(4,3,3);
 imshow(Zfiltered, []);
@@ -629,13 +521,14 @@ title('** Image filtered of filtering by conv **')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % filtering by DCT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-row_h=64; col_h=64;
-row_dct=64; col_dct=64;
-row_img=64; col_img=64;
+row_h=row;   col_h=col;
+row_dct=row; col_dct=col;
+row_img=row; col_img=col;
+
 %copy of kernel
-w_copy = 64;
-h_copy = 64;
-file = 'copy_64x64_to_64x64.raw';
+w_copy = 79;
+h_copy = 79;
+file = 'copy_360x160_to_79x79.raw';
 fin=fopen(file,'r');
 Rim_copy=fread(fin,w_copy*h_copy,'double'); 
 fclose(fin);
@@ -646,9 +539,11 @@ imshow(Zim_copy, []);
 title('copy of kernel matrix');  
 
 %copy of h
-w_copy = 64;
-h_copy = 64;
-file = 'copy_64x64_to_64x64.raw';
+w_copy = 180;
+h_copy = 80;
+%file = 'copy_180x80_to_180x80.raw';
+file = 'cp_180x80_to_360x160.raw';
+
 fin=fopen(file,'r');
 Rim_copy_h=fread(fin,w_copy*h_copy,'double'); 
 fclose(fin);
@@ -693,6 +588,19 @@ subplot(4,3,9);
 imshow(Zim_filteringByDCT_img, []);
 title('image of filtering by DCT'); 
 
+%{
+figure();
+H = dct2(Zim_filteringByDCT_kernel);
+Hinv = 1 ./ (H);
+%Hinv = normalize(Hinv, 'range', [-0.5 0]);
+Hinv = 0.00001 + Hinv;
+Y = dct2(Zim_filteringByDCT_img) .* Hinv;
+y = idct2(Y);
+imshow(y, []);
+title('y'); 
+return;
+%}
+
 %DCT spectrum of image
 file = append(file_name,'_filteringByDCT_image_DCT.raw');
 fin=fopen(file,'r');
@@ -715,7 +623,7 @@ R_filteringByDCT_filtered=fread(fin,row_dct*col_dct,'double');
 S_filteringByDCT_filtered=(R_filteringByDCT_filtered);
 S_filteringByDCT_filtered=reshape(S_filteringByDCT_filtered,row_dct,col_dct);
 S_filteringByDCT_filtered=S_filteringByDCT_filtered';
-S_filteringByDCT_filtered = fftshift(S_filteringByDCT_filtered);
+S_filteringByDCT_filtered = (S_filteringByDCT_filtered);
 fclose(fin);
 subplot(4,3,12);
 imshow(((S_filteringByDCT_filtered)), []);
@@ -724,86 +632,26 @@ title('filtered by filtering by DCT');
 %DCT spectrum of image
 file = append(file_name,'_filteringByDCT_filtered_DCT.raw');
 fin=fopen(file,'r');
-spec_filteringyDCT_img_DCT=fread(fin,row_dct*col_dct,'double'); 
-S_filteringyDCT_img_DCT=(spec_filteringyDCT_img_DCT);
-S_filteringyDCT_img_DCT=reshape(S_filteringyDCT_img_DCT,row_dct,col_dct);
-S_filteringyDCT_img_DCT=S_filteringyDCT_img_DCT';
-S_filteringyDCT_img_DCT = (S_filteringyDCT_img_DCT);
+spec_filteringyDCT_filtered_DCT=fread(fin,row_dct*col_dct,'double'); 
+S_filteringyDCT_filtered_DCT=(spec_filteringyDCT_filtered_DCT);
+S_filteringyDCT_filtered_DCT=reshape(S_filteringyDCT_filtered_DCT,row_dct,col_dct);
+S_filteringyDCT_filtered_DCT=S_filteringyDCT_filtered_DCT';
+S_filteringyDCT_filtered_DCT = (S_filteringyDCT_filtered_DCT);
 fclose(fin);
 subplot(4,3,11);
-imshow(log(abs(S_filteringyDCT_img_DCT)), []);
+imshow(log(abs(S_filteringyDCT_filtered_DCT)), []);
 title('DCT of filtered of filtering by DCT'); 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%{
-figure('name',' 1check','NumberTitle','off');
-imshow((idct2(S_filteringyDCT_kernel_DCT)), []);
-title('IDCT of DCT of kernel of filtering by DCT');
-
-figure('name',' 2check','NumberTitle','off');
-imshow((dct2((idct2(S_filteringyDCT_kernel_DCT)))), []);
-title('DCT of IDCT of DCT of kernel of filtering by DCT');
-%}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-return;
-
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% DIY COS(i, j, u, v)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%COS 2D
-%{
-N = 64;
-i = (0:(1):(N-1));
-j = (0:(1):(N-1));
-
-u = 1;
-v = 1;
-for j = 1 : N
-   for i = 1 : N 
-       cos_u = cos(pi*(2*i+1)*u/(2*N));
-       cos_v = cos(pi*(2*j+1)*v/(2*N));
-       y(j,i) = 128*cos_u*cos_v; %y(row, col)
-   end
-end
-
-figure('name',' DIY_COS');
-imshow(y, []);
-title('y');
-
-return;
-%}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% RAW DATA
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%{
-fin = fopen(file_name, 'r');
-if (contains(file_name,'16bitsGrayScale')) 
-    raw=fread(fin,row*col,'uint16=>uint8'); 
-else
-    raw=fread(fin,row*col,'uint8=>uint8'); 
-end
-raw = reshape(raw, row, col);
-raw = raw';
-figure('Name',file_name,'NumberTitle','off');
-imshow(raw, [0,255]);
-fclose(fin);
-raw_double = im2double(raw);
-%}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % DCT and IDCT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (RUN_DCT_IDCT)
-if (RUN_DECONV_DCT)
-    row_dct=128; col_dct=128;
-else
-   row_dct=256; col_dct=256; 
-end
 %raw data
 if true
     file_raw_dct = append(file_name,'_im_PGMDct.raw');
     fin=fopen(file_raw_dct,'r'); 
-    if (contains(file_raw_dct,'16bitsGrayScale')) 
+    if (contains(file_raw_dct,'finger')) 
         R_im=fread(fin,row*col,'uint16=>uint8'); 
     else
         R_im=fread(fin,row*col,'uint8=>uint8'); 
@@ -850,19 +698,6 @@ imshow(ZRaw_IDCT, [0,255]);
 title('IDCT');   
 
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% DFT
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%{
-figure('Name','DFT','NumberTitle','off');
-subplot(2,1,1);
-%R = fftshift(fft2(raw, row, col));
-R = fftshift(fft2(raw));
-imshow(log(abs(R)), []);
-subplot(2,1,2);
-imshow((angle(R)), []);
-%}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Noise estimate, mean and variance 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -918,248 +753,6 @@ avg = imfilter(raw, ones(3)/(3*3));
 figure('Name', 'avg','NumberTitle','off');
 imshow(avg, []);
 %}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% RECTANGLE
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%{
-row_rect=8; col_rect=8;
-row_dft=79; col_dft=79;
-file_rect = 'rectangle.raw';
-fin=fopen(file_rect,'r');
-R_rect=fread(fin,row_rect*col_rect,'uint8=>uint8'); 
-ZRaw_rect=reshape(R_rect,row_rect,col_rect);
-ZRaw_rect=ZRaw_rect';
-fclose(fin);
-
-figure('Name','Rect PSF','NumberTitle','off');
-subplot(2,2,1);
-imshow(ZRaw_rect);
-title('rectangle')
-
-file = 'rectangle_img.raw';
-fin=fopen(file,'r');
-R_h=fread(fin,row_dft*col_dft,'uint8=>uint8'); 
-ZRaw_h=reshape(R_h,row_dft,col_dft);
-ZRaw_h=ZRaw_h';
-fclose(fin);
-
-subplot(2,2,2);
-imshow(ZRaw_h);
-title('my h')
-
-%DFT spectrum
-file_H = 'rectangle_DFTSpec.raw';
-fin=fopen(file_H,'r');
-spec_rect=fread(fin,row_dft*col_dft,'double'); 
-S=(spec_rect);
-S=reshape(S,row_dft,col_dft);
-S=S';
-%S = fftshift(S);
-fclose(fin);
-subplot(2,2,3);
-imshow(log(abs(S)), []);
-title('My H Spectrum');
-
-H_matlab = fft2(ZRaw_h);
-H_matlab = fftshift(H_matlab);
-subplot(2,2,4);
-imshow(log(abs(H_matlab)), []);
-title('Matlab fft2 of my h');
-
-%{
-H_matlab = fft2(ZRaw_rect);
-H_matlab_real = real(H_matlab);
-figure('Name','H_matlab_real','NumberTitle','off');
-H_matlab_real = fftshift(H_matlab_real);
-imshow(log(abs(H_matlab_real)), []);
-title('H matlab');
-%}
-%}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% COS X
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%{
-row_cosx=79; col_cosx=79;
-row_dft=79; col_dft=79;
-file_cosx = 'cos_x.raw';
-fin=fopen(file_cosx,'r');
-R_cosx=fread(fin,row_cosx*col_cosx,'uint8=>uint8'); 
-ZRaw_cosx=reshape(R_cosx,row_cosx,col_cosx);
-ZRaw_cosx=ZRaw_cosx';
-fclose(fin);
-
-figure('Name','CosX PSF','NumberTitle','off');
-subplot(2,2,1);
-imshow(ZRaw_cosx);
-title('cosx')
-
-file = 'cos_x_img.raw';
-fin=fopen(file,'r');
-R_h=fread(fin,row_dft*col_dft,'uint8=>uint8'); 
-ZRaw_h=reshape(R_h,row_dft,col_dft);
-ZRaw_h=ZRaw_h';
-fclose(fin);
-
-subplot(2,2,2);
-imshow(ZRaw_h);
-title('my h')
-
-%DFT spectrum
-file_H = 'cos_x_DFTSpec.raw';
-fin=fopen(file_H,'r');
-spec_cosx=fread(fin,row_dft*col_dft,'double'); 
-S=(spec_cosx);
-S=reshape(S,row_dft,col_dft);
-S=S';
-S = fftshift(S);
-fclose(fin);
-subplot(2,2,3);
-imshow((abs(S)), []);
-title('H of cos_x normalized');
-
-H_matlab = fft2(ZRaw_h);
-H_matlab = fftshift(H_matlab);
-subplot(2,2,4);
-imshow(log(abs(H_matlab)), []);
-title('Matlab fft2 of my h');
-
-%{
-H_matlab = fft2(ZRaw_cosx);
-H_matlab_real = real(H_matlab);
-figure('Name','H_matlab_real','NumberTitle','off');
-H_matlab_real = fftshift(H_matlab_real);
-imshow(log(abs(H_matlab_real)), []);
-title('H matlab');
-%}
-%}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% DECONV BY DCT
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (RUN_DECONV_DCT)
-row_dct=128; col_dct=128;
-row=255; col=255;
-
-%raw data
-file_raw_dct = append(file_name,'_im_Filter.raw');
-fin=fopen(file_raw_dct,'r');
-ZRaw_im=fread(fin,row*col,'double'); 
-ZRaw_im=reshape(ZRaw_im,row,col);
-ZRaw_im=ZRaw_im';
-fclose(fin);
-figure('Name', 'Deconv','NumberTitle','off');
-subplot(3,3,1);
-imshow(ZRaw_im, [0,255]);
-title('Raw image to be filtered');
-
-%raw data of filtered
-file_raw_dct_filtered = append(file_name,'_im_PGMDct.raw');
-fin=fopen(file_raw_dct_filtered,'r');
-if (contains(file_raw_dct_filtered,'16bitsGrayScale')) 
-    R_im_filtered=fread(fin,row_dctcol_dct,'uint16=>uint8'); 
-else
-    R_im_filtered=fread(fin,row_dct*col_dct,'uint8=>uint8'); 
-end
-ZRaw_im_filtered=reshape(R_im_filtered,row_dct,col_dct);
-ZRaw_im_filtered=ZRaw_im_filtered';
-fclose(fin);
-
-subplot(3,3,2);
-imshow(ZRaw_im_filtered);
-title('Filtered')
-
-%DCT spectrum
-file_raw_dct = append(file_name,'G_Spec_byDCT.raw');
-fin=fopen(file_raw_dct,'r');
-spec=fread(fin,row_dct*col_dct,'double'); 
-S=(spec);
-S=reshape(S,row_dct,col_dct);
-S=S';
-fclose(fin);
-subplot(3,3,6);
-imshow(log(abs(S)), []);
-title('DCT Spec of my deconv');
-
-subplot(3,3,4);
-imshow(ZRaw_h);
-title('My PSF kernel')
-
-row=row_dct; col=col_dct;
-file = append(file_name,'Deconv_byDCT.raw');
-fin=fopen(file,'r');
-R=fread(fin,row*col,'uint8=>uint8'); 
-ZRaw_Deconv=reshape(R,row,col);
-ZRaw_Deconv=ZRaw_Deconv';
-
-fclose(fin);
-subplot(3,3,5);
-imshow(ZRaw_Deconv);
-title('My deconv')
-
-subplot(3,3,3);
-imshow(log(abs(S_circle_DCTSpec)), []);
-title('DCT Spec of my PSF kernel');
-
-h = im2double(ZRaw_circle);
-%h = im2double(ZRaw_rect);
-%h = im2double(ZRaw_cosx);
-img = im2double(ZRaw_im);
-blurred = imfilter(img, h, 'conv', 'circular');
-subplot(3,3,7);
-blurred_norm = 255*mat2gray(blurred);
-imshow(blurred_norm, [0,255]);
-title('Matlab blurred with my PSF');
-
-ZRaw_im_filtered_double = 255*im2double(ZRaw_im_filtered);
-
-wnr2 = deconvwnr(ZRaw_im_filtered_double, h, 0.1);
-%wnr2 = deconvwnr(blurred, h, 0.1);
-subplot(3,3,8);
-imshow(wnr2, []);
-title('Matlab deconvwnr with my PSF');
-
-H_matlab = fft2(wnr2);
-H_matlab = fftshift(H_matlab);
-subplot(3,3,9);
-imshow(log(abs(H_matlab)), []);
-title('Matlab fft2 of Deconvwnr');
-
-%filtered data
-file_raw_filtered = append(file_name,'Filtered');
-fin=fopen(file_raw_filtered,'r');
-Filtered=fread(fin,row*col,'uint8=>uint8');
-Filtered=reshape(Filtered,row,col);
-Filtered=Filtered';
-fclose(fin);
-
-%show(Filtered, file_raw_filtered, row, col);
-if (RUN_DECONV_DFT == 0)
-    return;
-end
-%
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% PSF kernel lab
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (RUN_PSF_Kernel_lab == 1)
-length =  9;
-theta = 10;
-PSF = fspecial('motion', length, theta);
-
-sigma = 5;
-winSize  = 8;
-PSF = fspecial('gaussian', winSize, sigma);
-
-blurred = imfilter(raw, PSF, 'conv', 'circular');
-
-recst = deconvwnr(raw, PSF, 0.1);
-
-figure('Name', 'Blurred','NumberTitle','off');
-imshow(blurred, []);
-
-figure('Name', 'Reconstructed','NumberTitle','off');
-imshow(recst, []);
-end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FUNC
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

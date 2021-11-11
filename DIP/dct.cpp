@@ -60,18 +60,19 @@ bool DCT::clear(void) {
 	**                      DCT
 	*******************************************************************************/
 bool DCT::dct2(double** dst, double* src, double w, double h) {
-	return dct2(dst, src, w, h, w);
+	return dct2(dst, src, w, h, (w>=h)?w:h);
 }
 
 bool DCT::dct2(double** dst, double* src, double w, double h, double window) {
-	if (w != h)
-		return false;
 	if (w <= 0 || h <= 0)
 		return false;
 	uint64_t w_pow_check = (uint64_t)w&((uint64_t)w-1);
 	uint64_t h_pow_check = (uint64_t)h&((uint64_t)h-1);
 	if (w_pow_check != 0 || h_pow_check != 0) //check if pow of 2
-		return false;
+	{
+		printf("[%s][%s]Dimension not power of 2 for DCT-II but continue...\n", "DCT", __func__);
+		//return false;
+	}
 	matrix = (double*)malloc(sizeof(double)*w*h);
 	if (matrix == NULL) 
 		return false;
@@ -83,10 +84,7 @@ bool DCT::dct2(double** dst, double* src, double w, double h, double window) {
 		for (double u=0; u<w; u++) {
 			for (double j=0; j<h; j++) {
 				for (double i=0; i<w; i++) {
-					if (  (u<window && v<window) 
-						||(u<window && v>(h-1)-window)
-						||(u>(w-1)-window && v<window) 
-						||(u>(w-1)-window && v>(h-1)-window)) {
+					if (u<window && v<window) {
 						if (u==0) { //matlab F1
 							Cu = (sqrt(1.0))/(sqrt(w));
 						}
@@ -140,11 +138,11 @@ bool DCT::dct2(double** dst, double* src, double w, double h, double window) {
 }
 
 bool DCT::dct2(double** dst, double* src, double w, double h, double window, double group) {
-	if (w != h)
+	if (group != 0 && w != h)
 		return false;
 	if (w <= 0 || h <= 0)
 		return false;
-	if (((int)w%(int)group) || ((int)h%(int)group))
+	if (group != 0 && (((int)w%(int)group) || ((int)h%(int)group)))
 		return false;
 	uint64_t w_pow_check = (uint64_t)w&((uint64_t)w-1);
 	uint64_t h_pow_check = (uint64_t)h&((uint64_t)h-1);
@@ -253,14 +251,19 @@ bool DCT::dct2(double** dst, double* src, double w, double h, double window, dou
 }
 
 bool DCT::idct2(double*& dst, double* w, double* h) {
-	if (this->n != this->m)
-		return false;
+	return idct2(dst, this->matrix, w, h);
+}
+bool DCT::idct2(double*& dst, double* matrix, double* w, double* h) {
 	if (n <= 0 || m <= 0)
 		return false;
 	uint64_t n_pow_check = (uint64_t)n&((uint64_t)n-1);
 	uint64_t m_pow_check = (uint64_t)m&((uint64_t)m-1);
 	if (n_pow_check != 0 || m_pow_check != 0) //check if pow of 2
-		return false;
+	{
+		printf("[%s][%s]Dimension not power of 2 for DCT-II but continue...\n", "DCT", __func__);
+		//return false;
+	}
+
 	if (w == NULL || h == NULL)
 		return false;
 	if (matrix == NULL)
