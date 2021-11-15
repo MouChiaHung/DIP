@@ -804,7 +804,110 @@ function block = noise_est(im)
     plot(n, hg);
 end
 
+%{
+kr = zeros(size(im_cos));
+kr_cos = zeros(size(im_cos));
+kr_sin = zeros(size(im_cos));
 
+delX = 0;
+delY = 0;
+delR = 0;
+centerX = 1;
+centerY = 1;
+w = row;
+h = col;
+signal = 0;
+decay = 0;
+decay_factor = 2.0
+init = -0;
+rmax = 16
+period = 22
+f0 = 2
+limitR = sqrt(power(w,2)+power(h,2));
+
+for j=1:col
+    for i=1:row
+        delX = i - centerX;
+        delY = j - centerY;
+        delR = sqrt(power(delX, 2)+power(delY, 2));
+        decay = abs(exp((-1)*decay_factor*delR/limitR));
+        if (delR > rmax)
+            kr_cos(j, i) = 128;
+            kr_sin(j, i) = 128;
+            continue;
+        end
+        
+        inverse_kernel_cos = 128;
+        inverse_kernel_cos = inverse_kernel_cos + 80*sin(1*f0*2*pi*delR/period);
+        inverse_kernel_cos = inverse_kernel_cos + 32*sin(3*f0*2*pi*delR/period);
+        inverse_kernel_cos = inverse_kernel_cos + 16*sin(5*f0*2*pi*delR/period);
+        kr_cos(j, i) = decay*inverse_kernel_cos;
+        if (kr_cos(j, i) < 0)
+            kr_cos(j, i) = 0;
+        end
+        
+        inverse_kernel_sin = 128;
+        inverse_kernel_sin = inverse_kernel_sin + 80*cos(1*f0*2*pi*delR/period);
+        inverse_kernel_sin = inverse_kernel_sin + 32*cos(3*f0*2*pi*delR/period);
+        inverse_kernel_sin = inverse_kernel_sin + 16*cos(5*f0*2*pi*delR/period);
+        kr_sin(j, i) = decay*inverse_kernel_sin;
+        if (kr_sin(j, i) < 0)
+            kr_sin(j, i) = 0;
+        end
+    end
+end
+
+kr_cos_norm = kr_cos ./ sum(kr_cos(:));
+kr_sin_norm = kr_sin ./ sum(kr_sin(:));
+
+imshow(kr_cos_norm, []); title('kernel of cos');
+imshow(kr_sin_norm, []); title('kernel of sin');
+
+% without concept of conjugate
+Hcos = dct2(kr_cos_norm);
+Hsin = dct2(kr_sin_norm);
+
+Hreal = Hcos./absH;
+Himag = Hsin./absH;
+
+Ireal = dct2(im_cos);
+Iimag = dct2(im_sin);
+
+Yreal = Ireal.*Hreal + Iimag.*Himag;
+Yimag = Ireal.*Himag - Iimag.*Hreal;
+y_cos = idct2(Yreal);
+y_sin = idct2(Yimag);
+
+if true
+figure,imshow(abs(log(Hreal)), []); title('H of real');
+figure,imshow(abs(log(Himag)), []); title('H of imaginary');
+figure,imshow(abs(log(Ireal)), []); title('I of real');
+figure,imshow(abs(log(Iimag)), []); title('I of imaginary');
+figure,imshow(abs(log(Yreal)), []); title('Y of real');
+figure,imshow(abs(log(Yimag)), []); title('Y of imaginary');
+end
+
+figure, imshow(y_cos, []); title('y cos'); colorbar;
+figure, imshow(y_sin, []); title('y sin'); colorbar;
+figure, imshow(y_cos+y_sin, []); title('output');
+
+% with concept of conjugate
+Hcos = dct2(kr_cos);
+Hsin = dct2(kr_sin);
+
+absH = sqrt(abs(Hcos)+abs(Hsin));
+
+Hreal = Hcos./absH;
+Himag = (-1).*Hsin./absH;
+
+Ireal = dct2(im_cos);
+Iimag = dct2(im_sin);
+
+Y = Ireal.*Hreal - Iimag.*Himag;
+y = idct2(Y);
+
+imshow(y, []); title('output with concept of conjugate');
+%}
 
 
 
