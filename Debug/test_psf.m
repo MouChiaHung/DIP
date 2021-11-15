@@ -867,8 +867,8 @@ imshow(kr_sin_norm, []); title('kernel of sin');
 Hcos = dct2(kr_cos_norm);
 Hsin = dct2(kr_sin_norm);
 
-Hreal = Hcos./absH;
-Himag = Hsin./absH;
+Hreal = Hcos;
+Himag = Hsin;
 
 Ireal = dct2(im_cos);
 Iimag = dct2(im_sin);
