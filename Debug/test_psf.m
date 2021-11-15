@@ -906,13 +906,7 @@ Iimag = dct2(im_sin);
 Y = Ireal.*Hreal - Iimag.*Himag;
 y = idct2(Y);
 
-imshow(y, []); title('output with concept of conjugate');
+imshow(y, []); 
+title('output with concept of conjugate');
+
 %}
-
-
-
-
-
-
-
-
