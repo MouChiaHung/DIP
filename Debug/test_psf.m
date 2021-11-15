@@ -907,6 +907,6 @@ Y = Ireal.*Hreal - Iimag.*Himag;
 y = idct2(Y);
 
 imshow(y, []); 
-title('output with concept of conjugate');
+title('output of cos with H conjugate and normalize');
 
 %}
