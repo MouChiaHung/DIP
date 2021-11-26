@@ -284,6 +284,149 @@ int main()
 	//return 0;
 
 #if RUN_UNIT_TEST //test
+
+#if 0 //mat-multiply test
+	double dst[2*3];
+	double matA[2*2] = {1, 2, 3, 4};
+	double matB[2*3] = {5, 6, 7, 8, 9, 10};
+	Filter f_mm;
+	if (!f_mm.mat_multiply(dst, matA, matB, 3, 2, 2, 2, 3, 2)) {
+		LOG("Failed to mat_multiply\n");
+		return 0;
+	}
+	LOG("mat multiply result:\n");
+	for (int j=0;j<2; j++) {
+		for (int i=0; i<3; i++) {
+			LOG("[%.0f]", dst[i+j*3]);
+			if ((i+1)%3 == 0)
+				LOG("\n");
+		}
+	}
+#endif
+
+#if 0 //dctmtx test
+	double ctm[10*10];
+	DCT dct_ctm;
+	dct_ctm.dctmtx(ctm, 10);
+	LOG("dctmtx:\n");
+	for (int j=0;j<10; j++) {
+		for (int i=0; i<10; i++) {
+			if (ctm[i+j*10] >= 0)
+				LOG("[ ");
+			else 
+				LOG("[");
+			LOG("%.2f]", ctm[i+j*10]);
+			if ((i+1)%10 == 0)
+				LOG("\n");
+		}
+	}
+
+#endif
+
+#if 0 //mat-transpose test
+	double mat_to_transpose[2*3] = {5, 6, 7, 8, 9, 10};
+	double mat_transposed[3*2];
+	Filter f_mat_transpose;
+	if (!f_mat_transpose.mat_transpose(mat_transposed, mat_to_transpose, 3, 2)) {
+		LOG("Failed to mat_transpose\n");
+		return 0;
+	}
+
+	LOG("mat_to_be_transpose:\n");
+	int w = 3;
+	int h = 2;
+	for (int j=0;j<h; j++) {
+		for (int i=0; i<w; i++) {
+			if (mat_to_transpose[i+j*w] >= 0)
+				LOG("[");
+			else 
+				LOG("[");
+			LOG("%.2f]", mat_to_transpose[i+j*w]);
+			if ((i+1)%w == 0)
+				LOG("\n");
+		}
+	}
+    LOG("mat_transposed:\n");
+	w = 2;
+	h = 3;
+	for (int j=0;j<h; j++) {
+		for (int i=0; i<w; i++) {
+			if (mat_transposed[i+j*w] >= 0)
+				LOG("[");
+			else 
+				LOG("[");
+			LOG("%.2f]", mat_transposed[i+j*w]);
+			if ((i+1)%w == 0)
+				LOG("\n");
+		}
+	}
+#endif
+
+#if 1 //fast dct and idct test
+	int w = 4;
+	int h = 4;
+	double im[4*4];
+	double IM[4*4];
+	double im_idct[4*4];
+	for (int j=0; j<h; j++)
+		for (int i=0; i<w; i++)
+			im[i+j*w] = (i+1.0)+((int)(j+1.0))%2*10.0;
+	LOG("im:\n");
+	for (int j=0;j<h; j++) {
+		for (int i=0; i<w; i++) {
+			if (im[i+j*w] >= 0)
+				LOG("[");
+			else 
+				LOG("[");
+			if (im[i+j*w] < 10)
+				LOG(" ");
+			LOG("%.0f]", im[i+j*w]);
+			if ((i+1)%w == 0)
+				LOG("\n");
+		}
+	}
+
+	DCT dct_fast;
+	if (!dct_fast.dct2(IM,im,w)) {
+		LOG("Failed to fast dct2\n");
+		return 0;
+	}
+	LOG("IM:\n");
+	for (int j=0;j<h; j++) {
+		for (int i=0; i<w; i++) {
+			if (IM[i+j*w] >= 0)
+				LOG("[ ");
+			else 
+				LOG("[");
+			if (IM[i+j*w] < 10)
+				LOG(" ");
+			LOG("%.2f]", IM[i+j*w]);
+			if ((i+1)%w == 0)
+				LOG("\n");
+		}
+	}
+
+	if (!dct_fast.idct2(im_idct,IM,w)) {
+		LOG("Failed to fast idct2\n");
+		return 0;
+	}
+	LOG("IM:\n");
+	for (int j=0;j<h; j++) {
+		for (int i=0; i<w; i++) {
+			if (im_idct[i+j*w] >= 0)
+				LOG("[ ");
+			else 
+				LOG("[");
+			if (im_idct[i+j*w] < 10)
+				LOG(" ");
+			LOG("%.2f]", im_idct[i+j*w]);
+			if ((i+1)%w == 0)
+				LOG("\n");
+		}
+	}
+
+#endif	
+	
 #if 0 //atomic test
 	complex<double> c1(2, 1);
 	LOG("c1:%f+i%f\n", real(c1), imag(c1));
@@ -1186,13 +1329,12 @@ int main()
 *                FILTERING BY DCT   *\n\
 *************************************\n";
 	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-	LOG("start time:%s", asctime(timeinfo));
+	struct tm *timeinfo_start = localtime(&rawtime);
 	double* kernel = NULL;
 	Filter filter;
 	int width_h       = 180;
 	int height_h      = 80;
-	int radius_circle = 8;
+	int radius_circle = 6;
 	int dct_window    = width_h/2;
 	bool do_norm2one  = true;
 	if(!filter.circle(NULL, &kernel, width_h, height_h, radius_circle
@@ -1233,6 +1375,7 @@ int main()
 		return 0;
 	}
 
+	//[Prepare inverse kernel]
 	bool do_inverse = true;
 	if (do_inverse) {
 		if(!filter.circle(NULL, &kernel, width_h, height_h, radius_circle
@@ -1243,7 +1386,79 @@ int main()
 	}
 
 	//[Frequency domain]element-multiply whole image by H
-	if (!pgm.filtering_by_DCT(NULL, kernel, NULL, width_h, height_h, false, false, false)) {
+	bool go_fast = true;
+	bool dct_by_raw_filtered = true;
+	if (go_fast) {
+		int N = 79;
+		double* kr       = (double*)malloc(sizeof(double)*N*N);
+		double* raw_db   = (double*)malloc(sizeof(double)*pgm.width*pgm.height);
+		double* raw_crop = (double*)malloc(sizeof(double)*N*N);
+		if (!kr || !raw_db || !raw_crop)
+			return false;
+
+		if (!f_copier.copy(kr, kernel, N, N, width_h, height_h)){
+			LOG("filter.copy_center_around failed for kernel\n");
+			return 0;
+		}
+		if (kernel) {
+			free(kernel);
+		}
+		kernel = kr;
+		width_h  = N;
+		height_h = N;
+
+		if (dct_by_raw_filtered){
+			if (pgm.raw_filtered == NULL)
+				return false;
+			if (!f_copier.copy_center_around(raw_crop, pgm.raw_filtered, N, N, pgm.w_filtered, pgm.h_filtered)){
+				LOG("filter.copy_center_around failed for pgm raw filtered\n");
+				return 0;
+			}
+			if (pgm.raw_filtered)
+				free(pgm.raw_filtered);
+			pgm.raw_filtered = (double*)malloc(sizeof(double)*N*N);
+			for (int i=0; i<N*N; i++) {
+				pgm.raw_filtered[i] = raw_crop[i];
+			}
+			pgm.w_filtered  = N;
+			pgm.h_filtered = N;
+
+		}
+		else {
+			for (int i=0; i<pgm.width*pgm.height; i++) {
+				if (pgm.depth == 2)
+					raw_db[i] = ((uint16_t*)pgm.raw)[i];
+				else if  (pgm.depth == 1) {
+					raw_db[i] = ((uint8_t*)pgm.raw)[i];
+				}
+				else {
+					return false;
+				}
+			}
+			if (!f_copier.copy_center_around(raw_crop, raw_db, N, N, pgm.width, pgm.height)){
+				LOG("filter.copy_center_around failed for pgm raw\n");
+				return 0;
+			}
+			if (raw_crop == NULL)
+				return false;
+			if (pgm.raw) {
+				free(pgm.raw);
+				pgm.raw = NULL;
+			}
+			pgm.raw    = malloc(sizeof(uint8_t)*N*N);
+			pgm.depth  = 1;
+			pgm.width  = N;
+			pgm.height = N;
+			for (int i=0; i<N*N; i++) {
+				((uint8_t*)pgm.raw)[i] = raw_crop[i];
+			}
+		} 
+		if (raw_db)
+			free(raw_db);
+		if (raw_crop)
+			free(raw_crop);
+	}
+	if (!pgm.filtering_by_DCT(NULL, kernel, NULL, width_h, height_h, dct_by_raw_filtered, false, go_fast)) {
 			LOG("pgm.filtering_by_DCT failed\n");
 			return false;
 	}
