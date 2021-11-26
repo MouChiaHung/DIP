@@ -2054,7 +2054,8 @@ bool PGM::dct(double** dst, int n_, int m_, int window, int group, bool dct_by_r
 	if (dct_by_raw_filtered && (n_ != w_filtered || m_ != h_filtered))
 		return false;	
 #endif
-
+	
+	void* im = NULL;
 	if (depth == 1) {
 		im = malloc(sizeof(uint8_t)*n_*m_);
 	}
