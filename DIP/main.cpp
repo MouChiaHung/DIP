@@ -1329,7 +1329,9 @@ int main()
 *                FILTERING BY DCT   *\n\
 *************************************\n";
 	time(&rawtime);
-	struct tm *timeinfo_start = localtime(&rawtime);
+	timeinfo = localtime(&rawtime);
+	LOG("start time:%s", asctime(timeinfo));
+
 	double* kernel = NULL;
 	Filter filter;
 	int width_h       = 180;
