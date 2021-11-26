@@ -2108,7 +2108,7 @@ bool Filter::circle(uint8_t** dst, double** kernel, int w_circle, int h_circle, 
 	}
 
 	//make h which is the kernel
-	LOG("Make h...\n");
+	LOG("Make kernel with sum of one...\n");
 	h = (double*) malloc(sizeof(double)*w_img*h_img);
 	h_normed = NULL;
 	for (int p = 0; p<w_img*h_img; p++) {
