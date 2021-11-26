@@ -188,7 +188,7 @@ bool PGM::read(string file_name_assigned, uint8_t*& data, int* size) {
 			if (depth ==2) {
 				fis.read((char*)((uint16_t*)raw+i+j*width), depth);
 				s = *((uint16_t*)((uint16_t*)raw+i+j*width));
-#if FINGER //special format of fp device 
+#if 16_BITS_IMG //special format of fp device 
 				((uint16_t*)(raw))[i+j*width] &= 0xff;
 				s &= 0xff;
 #endif				
@@ -1385,7 +1385,7 @@ bool PGM::filtering_by_DFT(double**dst, double* kernel, complex<double>* kernel_
   * X_EXT_DFT_N = W.*X_DCT_N;
   * X_EXT_DFT_2N = [X_EXT_DFT_N, 0, conj(X_EXT_DFT_N(end:-1:2))];
  */
-bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int w_kernel, int h_kernel, bool dct_by_raw_filtered, bool do_even_extension, bool do_inverse_transform) {
+bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int w_kernel, int h_kernel, bool dct_by_raw_filtered, bool do_even_extension, bool go_fast) {
 	if (raw == NULL)	
 		return false;
 	if (size <= 0)	
@@ -1426,8 +1426,14 @@ bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int 
 		}
 		else {
 			LOG("Prepare im without even extension...\n");
-			n = this->width;
-			m = this->height;
+			if (dct_by_raw_filtered) {
+				n = this->w_filtered;
+				m = this->h_filtered;
+			}
+			else {
+				n = this->width;
+				m = this->height;
+			}
 			image = (double*)malloc(sizeof(double)*(n)*(m));
 			memset(image, 0, sizeof(double)*(n)*(m));
 			if (!f_im_maker.copy(image, this->raw_filtered, n, m, this->w_filtered, this->h_filtered)) {
@@ -1484,8 +1490,14 @@ bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int 
 		}
 		else {
 			LOG("Prepare im without even extension...\n");
-			n = this->width;
-			m = this->height;
+			if (dct_by_raw_filtered) {
+				n = this->w_filtered;
+				m = this->h_filtered;
+			}
+			else {
+				n = this->width;
+				m = this->height;
+			}
 			image = (double*)malloc(sizeof(double)*(n)*(m));
 			if (image == NULL)
 				return false;
@@ -1525,19 +1537,21 @@ bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int 
 
 		LOG("DCT of kernel... (N:%d, M:%d)\n", n, m);
 		DCT dct_kernel;
-		if (!dct_kernel.dct2(&H, h, n, m)) {
-			LOG("dct2 failed\n");
-			return false;
+		if (go_fast) {
+			if (n != m) {
+				LOG("only square matrix can go with dctmtx !\n");
+				return false;
+			}
+			H = (double*)malloc(n*n*sizeof(double));
+			if (!dct_kernel.dct2(H, h, n)) {
+				LOG("dct2 failed\n");
+				return false;
+			}
 		}
-
-		if (do_inverse_transform) {
-			LOG("**** Do inverse transform ****\n");
-			double nsr = 0.06;
-			nsr = 0;
-			double c = 0;
-			for (int k=0; k<n*m; k++) {
-				c = 1.0/(H[k]+nsr);
-				H[k] = c;
+		else {
+			if (!dct_kernel.dct2(&H, h, n, m)) {
+				LOG("dct2 failed\n");
+				return false;
 			}
 		}
 
@@ -1611,9 +1625,23 @@ bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int 
 	}
 #endif
 	DCT dct_im;
-	if (!dct_im.dct2(&I, im, n, m)) {
-		LOG("dct2 failed\n");
-		return false;
+
+	if (go_fast) {
+		if (n != m) {
+			LOG("only square matrix can go with dctmtx !\n");
+			return false;
+		}
+		I = (double*)malloc(n*n*sizeof(double));
+		if (!dct_im.dct2(I, im, n)) {
+			LOG("dct2 failed\n");
+			return false;
+		}
+	}
+	else {
+		if (!dct_im.dct2(&I, im, n, m)) {
+			LOG("dct2 failed\n");
+			return false;
+		}
 	}
 	if (!dct_im.spectrum(&spec_I, &w_spec_I, &h_spec_I, false)) {
 		LOG("spectrum failed\n");
@@ -1691,10 +1719,26 @@ bool PGM::filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int 
 	double w_idct = 0;
 	double h_idct = 0;
 	DCT dct_forY(n, m, Y);
-	if (!dct_forY.idct2(y, Y, &w_idct, &h_idct)) {
-		LOG("idct2 failed\n");
-		return false;
+
+	if (go_fast) {
+		if (n != m) {
+			LOG("only square matrix can go with dctmtx !\n");
+			return false;
+		}
+		w_idct = n;
+		h_idct = m;
+		if (!dct_forY.idct2(y, Y, w_idct)) {
+			LOG("idct2 failed\n");
+			return false;
+		}
 	}
+	else {
+		if (!dct_forY.idct2(y, Y, &w_idct, &h_idct)) {
+			LOG("idct2 failed\n");
+			return false;
+		}
+	}
+	
 	LOG("IDCT of product done (N:%d, M:%d)\n", (int)w_idct, (int)h_idct);
 
 #if 1
