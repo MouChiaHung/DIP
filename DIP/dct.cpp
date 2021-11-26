@@ -59,6 +59,119 @@ bool DCT::clear(void) {
 	/******************************************************************************
 	**                      DCT
 	*******************************************************************************/
+/**
+ * N-by-N discrete cosine transform (DCT) matrix, which you can use to perform a 2-D IDCT on an image
+ * dctmtx: 
+ *     ctm = sqrt(1/N), u=0; =sqrt(2/N)*cos(pi*(2*i+1)*u/(2*N)), 1<=u<=(N-1)
+ * DCT:
+ *     IM = (ctm)  * im * (ctm)'
+ * IDCT: 
+ *     im = (ctm') * IM * (ctm')'
+ */
+bool DCT::dctmtx(double* ctm, int N) {
+	double alpha = 0;
+	for (int u=0; u<N; u++) {
+		for (int i=0; i<N; i++) {
+			if (u == 0) {
+				alpha = sqrt(1.0/(double)N);
+			}
+			else {
+				alpha = sqrt(2.0/(double)N);
+			}
+			ctm[i+u*N] = alpha*cos(PI*(2.0*(double)i+1.0)*u/(2.0*(double)N));
+		}
+	}
+	return true;
+}
+
+bool DCT::dct2(double* IM, double* im, int N) {
+	Filter f;
+	bool ret = false;
+	//get dctmtx
+	double* ctm  = (double*)malloc(N*N*sizeof(double));
+	double* ctmT = (double*)malloc(N*N*sizeof(double));
+	double* IMui = (double*)malloc(N*N*sizeof(double));
+
+	//get ctm
+	if (!dctmtx(ctm, N)) {
+		printf("[%s][%s]Failed to dctmtx\n", "DCT", __func__);
+		goto EXIT_FAST_DCT2;
+	}
+
+	//get ctm'
+	if (!f.mat_transpose(ctmT, ctm, N, N)) {
+		printf("[%s][%s]Failed to mat_transpose\n", "DCT", __func__);
+		goto EXIT_FAST_DCT2;
+	}
+
+	//doing IM = ctm * im * ctm'
+	if (!f.mat_multiply(IMui, im, ctmT, N, N, N, N, N, N)) {
+		printf("[%s][%s]Failed to mat_multiply im by ctm'\n", "DCT", __func__);
+		goto EXIT_FAST_DCT2;
+	}
+	if (!f.mat_multiply(IM, ctm, IMui, N, N, N, N, N, N)) {
+		printf("[%s][%s]Failed to mat_multiply ctm by IMui\n", "DCT", __func__);
+		goto EXIT_FAST_DCT2;
+	}
+	this->n = N;
+	this->m = N;
+	this->matrix = (double*)malloc(sizeof(double)*this->n*this->m);
+	if (matrix == NULL) 
+		return false;
+	memcpy(this->matrix, IM, sizeof(double)*this->n*this->m);
+	ret = true;
+
+EXIT_FAST_DCT2:
+	if (ctm)
+		free(ctm);
+	if (ctmT)
+		free(ctmT);
+	if (IMui)
+		free(IMui);
+	return ret;
+}
+
+bool DCT::idct2(double* im, double* IM, int N) {
+	Filter f;
+	bool ret = false;
+	//get dctmtx
+	double* ctm  = (double*)malloc(N*N*sizeof(double));
+	double* ctmT = (double*)malloc(N*N*sizeof(double));
+	double* imui = (double*)malloc(N*N*sizeof(double));
+
+	//get ctm of DCT
+	if (!dctmtx(ctm, N)) {
+		printf("[%s][%s]Failed to dctmtx\n", "DCT", __func__);
+		goto EXIT_FAST_IDCT2;
+	}
+
+	//get ctm of IDCT which is the transpose matrix of ctm of DCT
+	if (!f.mat_transpose(ctmT, ctm, N, N)) {
+		printf("[%s][%s]Failed to mat_transpose\n", "DCT", __func__);
+		goto EXIT_FAST_IDCT2;
+	}
+
+	//doing im = (ctm') * IM * (ctm')'
+	if (!f.mat_multiply(imui, IM, ctm, N, N, N, N, N, N)) {
+		printf("[%s][%s]Failed to mat_multiply im by (ctm')'\n", "DCT", __func__);
+		goto EXIT_FAST_IDCT2;
+	}
+	if (!f.mat_multiply(im, ctmT, imui, N, N, N, N, N, N)) {
+		printf("[%s][%s]Failed to mat_multiply (ctm') by imui\n", "DCT", __func__);
+		goto EXIT_FAST_IDCT2;
+	}
+	ret = true;
+
+EXIT_FAST_IDCT2:
+	if (ctm)
+		free(ctm);
+	if (ctmT)
+		free(ctmT);
+	if (imui)
+		free(imui);
+	return ret;
+}
+
 bool DCT::dct2(double** dst, double* src, double w, double h) {
 	return dct2(dst, src, w, h, (w>=h)?w:h);
 }
