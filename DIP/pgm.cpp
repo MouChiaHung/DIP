@@ -188,7 +188,7 @@ bool PGM::read(string file_name_assigned, uint8_t*& data, int* size) {
 			if (depth ==2) {
 				fis.read((char*)((uint16_t*)raw+i+j*width), depth);
 				s = *((uint16_t*)((uint16_t*)raw+i+j*width));
-#if 16_BITS_IMG //special format of fp device 
+#if 0 //special format of fp device 
 				((uint16_t*)(raw))[i+j*width] &= 0xff;
 				s &= 0xff;
 #endif				
@@ -275,7 +275,7 @@ bool PGM::dft(complex<double>** dst, int n_, int m_, int window, bool dft_by_raw
 	else 
 		LOG("Using raw data filtered (%dx%d)\n", n_, m_);
 
-	void* im;
+	void* im = NULL;
 	if (depth == 1) {
 		im = malloc(sizeof(uint8_t)*n_*m_);
 	}
@@ -573,7 +573,7 @@ bool PGM::dft_idft(int n_, int m_) {
 	if (n_*m_ > size) return false;
 	if (depth != 1 && depth!= 2) return false;
 
-	void* im;
+	void* im = NULL;
 	if (depth == 1) {
 		im = malloc(n_*m_*depth);
 	}
@@ -863,7 +863,7 @@ bool PGM::low_pass_eff(int n_, int m_, int window) {
 	if (window > n_ || window > m_) return false;
 	if (depth != 1 && depth!= 2) return false;
 
-	void* im;
+	void* im = NULL;
 	if (depth == 1) {
 		im = malloc(n_*m_*depth);
 	}
@@ -2055,7 +2055,6 @@ bool PGM::dct(double** dst, int n_, int m_, int window, int group, bool dct_by_r
 		return false;	
 #endif
 
-	void* im;
 	if (depth == 1) {
 		im = malloc(sizeof(uint8_t)*n_*m_);
 	}
