@@ -1,13 +1,13 @@
 ## My Digital Image Processing Lab
-#### [1] PGM and Tiff file parser
-#### [2] Bright
-#### [3] Inverse
-#### [4] Bit-plane slicing and reconstruct
-#### [5] Halftone
-#### [6] Floyd Steinberg Dithering
-#### [7] 2D Fourier transform
-#### [8] 2D Convolution
-#### [9] Gaussian filter
+#### [01] PGM and Tiff file parser
+#### [02] Bright
+#### [03] Inverse
+#### [04] Bit-plane slicing and reconstruct
+#### [05] Halftone
+#### [06] Floyd Steinberg Dithering
+#### [07] 2D Fourier transform
+#### [08] 2D Convolution
+#### [09] Gaussian filter
 #### [10] Edge detection
 #### [11] 2D Gradient
 #### [12] Discrete cosine transform
