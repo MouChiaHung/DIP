@@ -22,6 +22,9 @@ public:
 	DCT(double n, double m, double* M);
 	~DCT(void);
 	bool clear(void);
+	bool dctmtx(double* ctm, int N);
+	bool dct2(double* IM, double* im, int N);
+	bool idct2(double* im, double* IM, int N);
 	bool dct2(double** dst, double* src, double w, double h);
 	bool dct2(double** dst, double* src, double w, double h, double window);
 	bool dct2(double** dst, double* src, double w, double h, double window, double group);
