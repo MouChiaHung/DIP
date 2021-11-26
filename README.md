@@ -12,7 +12,7 @@
 #### [11] 2D Gradient
 #### [12] Discrete cosine transform
 #### [13] Blurring and deblurring via DFT and DCT
-#### [14] FAST DCT and IDCT
+#### [14] Fast DCT and IDCT
 
 ## Floyd Steinberg Dithering
 ![image](https://github.com/MouChiaHung/DIP/blob/master/forReadMe/FloydSteinbergDithering.png)
