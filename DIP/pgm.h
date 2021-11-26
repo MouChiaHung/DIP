@@ -37,7 +37,7 @@ public:
 	bool low_pass_eff(int n_, int m_, int window);
 	bool filtering_by_DFT(double**dst, double* kernel, complex<double>* kernel_DFT, int w_kernel, int h_kernel, int window, bool dft_by_raw_filtered, bool do_inverse_transform);
 	bool filtering_by_DFT(double**dst, double* kernel, complex<double>* kernel_DFT, int w_kernel, int h_kernel, int window, bool dft_by_raw_filtered, bool do_inverse_transform, double nsr);
-	bool filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int w_kernel, int h_kernel, bool dct_by_raw_filtered, bool do_even_extension, bool do_inverse_transform);
+	bool filtering_by_DCT(double**dst, double* kernel, double* kernel_DCT, int w_kernel, int h_kernel, bool dct_by_raw_filtered, bool do_even_extension, bool go_fast);
 	bool filtering(double* kernel, int window, int need_centering_crop);
 	bool filtering(double* kernel, int window);
 	bool dct(double** dst, int n_, int m_);
