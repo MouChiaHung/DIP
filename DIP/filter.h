@@ -28,6 +28,8 @@ public:
 	bool nextPowerToFloorLog2(int* dst, int src);
 	bool mat_transpose(double* dst, double* src, int w_src, int h_src);
 	bool mat_multiply(double* dst, double* matA, double* matB, int w_dst, int h_dst, int w_matA, int h_matA, int w_matB, int h_matB);
+	bool mat_multiply_by_matB_Transpose(double* dst, double* matA, double* matB, int w_dst, int h_dst, int w_matA, int h_matA, int w_matB, int h_matB);
+	bool mat_multiply_by_matA_Transpose(double* dst, double* matA, double* matB, int w_dst, int h_dst, int w_matA, int h_matA, int w_matB, int h_matB);
 	bool element_wise_multiply(double* dst, double* img, double* ker, int w, int h);
 	bool element_wise_complex_multiply(complex<double>* dst, complex<double>* img, complex<double>* ker, int w, int h);
 	bool element_wise_complex_multiply(double** dst_re, double** dst_im
