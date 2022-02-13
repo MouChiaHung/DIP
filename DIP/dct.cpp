@@ -131,6 +131,44 @@ EXIT_FAST_DCT2:
 	return ret;
 }
 
+bool DCT::dct2_ram_cost_reduce(double* IM, double* im, int N) {
+	Filter f;
+	bool ret = false;
+	//get dctmtx
+	double* ctm  = (double*)malloc(N*N*sizeof(double));
+	double* IMui = (double*)malloc(N*N*sizeof(double));
+
+	//get ctm
+	if (!dctmtx(ctm, N)) {
+		printf("[%s][%s]Failed to dctmtx\n", "DCT", __func__);
+		goto EXIT_FAST_DCT2;
+	}
+
+	//doing IM = ctm * im * ctm'
+	if (!f.mat_multiply_by_matB_Transpose(IMui, im, ctm, N, N, N, N, N, N)) {
+		printf("[%s][%s]Failed to mat_multiply_by_matB_Transpose im by ctm\n", "DCT", __func__);
+		goto EXIT_FAST_DCT2;
+	}
+	if (!f.mat_multiply(IM, ctm, IMui, N, N, N, N, N, N)) {
+		printf("[%s][%s]Failed to mat_multiply ctm by IMui\n", "DCT", __func__);
+		goto EXIT_FAST_DCT2;
+	}
+	this->n = N;
+	this->m = N;
+	this->matrix = (double*)malloc(sizeof(double)*this->n*this->m);
+	if (matrix == NULL) 
+		return false;
+	memcpy(this->matrix, IM, sizeof(double)*this->n*this->m);
+	ret = true;
+
+EXIT_FAST_DCT2:
+	if (ctm)
+		free(ctm);
+	if (IMui)
+		free(IMui);
+	return ret;
+}
+
 bool DCT::idct2(double* im, double* IM, int N) {
 	Filter f;
 	bool ret = false;
@@ -167,6 +205,38 @@ EXIT_FAST_IDCT2:
 		free(ctm);
 	if (ctmT)
 		free(ctmT);
+	if (imui)
+		free(imui);
+	return ret;
+}
+
+bool DCT::idct2_ram_cost_reduce(double* im, double* IM, int N) {
+	Filter f;
+	bool ret = false;
+	//get dctmtx
+	double* ctm  = (double*)malloc(N*N*sizeof(double));
+	double* imui = (double*)malloc(N*N*sizeof(double));
+
+	//get ctm of DCT
+	if (!dctmtx(ctm, N)) {
+		printf("[%s][%s]Failed to dctmtx\n", "DCT", __func__);
+		goto EXIT_FAST_IDCT2;
+	}
+
+	//doing im = (ctm') * IM * (ctm')'
+	if (!f.mat_multiply(imui, IM, ctm, N, N, N, N, N, N)) {
+		printf("[%s][%s]Failed to mat_multiply im by (ctm')'\n", "DCT", __func__);
+		goto EXIT_FAST_IDCT2;
+	}
+	if (!f.mat_multiply_by_matA_Transpose(im, ctm, imui, N, N, N, N, N, N)) {
+		printf("[%s][%s]Failed to mat_multiply_by_matA_Transpose ctm by imui\n", "DCT", __func__);
+		goto EXIT_FAST_IDCT2;
+	}
+	ret = true;
+
+EXIT_FAST_IDCT2:
+	if (ctm)
+		free(ctm);
 	if (imui)
 		free(imui);
 	return ret;
