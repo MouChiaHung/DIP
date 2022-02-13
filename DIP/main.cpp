@@ -367,7 +367,11 @@ int main()
 	int h = 4;
 	double im[4*4];
 	double IM[4*4];
+	double IM_ram_cost_reduce[4*4];
 	double im_idct[4*4];
+	double im_idct_ram_cost_reduce[4*4];
+
+	//making im
 	for (int j=0; j<h; j++)
 		for (int i=0; i<w; i++)
 			im[i+j*w] = (i+1.0)+((int)(j+1.0))%2*10.0;
@@ -386,6 +390,7 @@ int main()
 		}
 	}
 
+	//dct2 with dctmtx and dctmtx' faster version
 	DCT dct_fast;
 	if (!dct_fast.dct2(IM,im,w)) {
 		LOG("Failed to fast dct2\n");
@@ -406,11 +411,33 @@ int main()
 		}
 	}
 
+	//dct2 with dctmtx and dctmtx' half ram saving version
+	DCT dct_fast_ram_reduce;
+	if (!dct_fast.dct2_ram_cost_reduce(IM_ram_cost_reduce,im,w)) {
+		LOG("Failed to fast dct2\n");
+		return 0;
+	}
+	LOG("IM_ram_cost_reduce:\n");
+	for (int j=0;j<h; j++) {
+		for (int i=0; i<w; i++) {
+			if (IM_ram_cost_reduce[i+j*w] >= 0)
+				LOG("[ ");
+			else 
+				LOG("[");
+			if (IM_ram_cost_reduce[i+j*w] < 10)
+				LOG(" ");
+			LOG("%.2f]", IM_ram_cost_reduce[i+j*w]);
+			if ((i+1)%w == 0)
+				LOG("\n");
+		}
+	}
+
+	//idct2 with dctmtx and dctmtx' faster version
 	if (!dct_fast.idct2(im_idct,IM,w)) {
 		LOG("Failed to fast idct2\n");
 		return 0;
 	}
-	LOG("IM:\n");
+	LOG("im_idct:\n");
 	for (int j=0;j<h; j++) {
 		for (int i=0; i<w; i++) {
 			if (im_idct[i+j*w] >= 0)
@@ -425,7 +452,27 @@ int main()
 		}
 	}
 
-#endif	
+	//idct2 with dctmtx and dctmtx' half ram saving version
+	if (!dct_fast.idct2_ram_cost_reduce(im_idct_ram_cost_reduce,IM,w)) {
+		LOG("Failed to fast idct2\n");
+		return 0;
+	}
+	LOG("im_idct_ram_cost_reduce:\n");
+	for (int j=0;j<h; j++) {
+		for (int i=0; i<w; i++) {
+			if (im_idct_ram_cost_reduce[i+j*w] >= 0)
+				LOG("[ ");
+			else 
+				LOG("[");
+			if (im_idct_ram_cost_reduce[i+j*w] < 10)
+				LOG(" ");
+			LOG("%.2f]", im_idct_ram_cost_reduce[i+j*w]);
+			if ((i+1)%w == 0)
+				LOG("\n");
+		}
+	}
+
+#endif
 	
 #if 0 //atomic test
 	complex<double> c1(2, 1);
