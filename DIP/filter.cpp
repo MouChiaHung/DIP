@@ -111,6 +111,54 @@ bool Filter::mat_multiply(double* dst, double* matA, double* matB, int w_dst, in
 	return true;
 }
 
+bool Filter::mat_multiply_by_matA_Transpose(double* dst, double* matA, double* matB, int w_dst, int h_dst, int w_matA, int h_matA, int w_matB, int h_matB) {
+	if (dst == NULL || matA == NULL || matB == NULL)
+		return false;
+	memset(dst, 0, sizeof(double)*w_dst*h_dst);
+	for (int j=0; j<h_dst; j++) {
+		for (int i=0; i<w_dst; i++) {
+			for (int p=0; (p<w_matA && p<w_matB); p++) {
+				if ((dst + (i+j*w_dst)) == NULL)
+					return false;
+				if ((matA + (p+j*w_matA)) == NULL)
+					return false;
+				if ((matB + (i+p*w_matB)) == NULL)
+					return false;
+				dst[i+j*w_dst] += matA[j+p*w_matA] * matB[i+p*w_matB];
+				if (abs(dst[i+j*w_dst]) >= (1000.0*1000.0)) {
+					LOG("Crazy value at dst[%d][%d]:%.3f\n", i, j, dst[i+j*w_dst]);
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
+bool Filter::mat_multiply_by_matB_Transpose(double* dst, double* matA, double* matB, int w_dst, int h_dst, int w_matA, int h_matA, int w_matB, int h_matB) {
+	if (dst == NULL || matA == NULL || matB == NULL)
+		return false;
+	memset(dst, 0, sizeof(double)*w_dst*h_dst);
+	for (int j=0; j<h_dst; j++) {
+		for (int i=0; i<w_dst; i++) {
+			for (int p=0; (p<w_matA && p<w_matB); p++) {
+				if ((dst + (i+j*w_dst)) == NULL)
+					return false;
+				if ((matA + (p+j*w_matA)) == NULL)
+					return false;
+				if ((matB + (i+p*w_matB)) == NULL)
+					return false;
+				dst[i+j*w_dst] += matA[p+j*w_matA] * matB[p+i*w_matB];
+				if (abs(dst[i+j*w_dst]) >= (1000.0*1000.0)) {
+					LOG("Crazy value at dst[%d][%d]:%.3f\n", i, j, dst[i+j*w_dst]);
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
 bool Filter::element_wise_multiply(double* dst, double* img, double* ker, int w, int h) 
 {
 	if (w<1 || h<1) {
