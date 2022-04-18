@@ -486,6 +486,42 @@ bool Filter::rotate(uint8_t* dst, uint8_t* src, int w, int h, int depth, int the
 	return true;
 }
 
+bool Filter::reflect(uint8_t* dst, uint8_t* src, int w, int h, int depth, int theta) {
+	if (depth != 8) {
+		LOG("Only support 8bits image !\n");
+		return false;
+	}
+	memset(dst, 0, sizeof(uint8_t)*w*h);
+	float phi = theta/180.0*PI;
+	float T[2][2]     = { cos(phi),  sin(phi),
+						  sin(phi), -cos(phi)};
+	float T_inv[2][2] = { cos(phi),  sin(phi),
+						  sin(phi),  -cos(phi)};
+	int i_;
+	int j_;
+
+	int center_i = round(w/2.0);
+	int center_j = round(h/2.0);
+
+	//v' = Einv * v
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			i_ = round(T_inv[0][0]*(i-center_i) + T_inv[0][1]*(j-center_j)) + center_i;
+			j_ = round(T_inv[1][0]*(i-center_i) + T_inv[1][1]*(j-center_j)) + center_j;
+			if (i_ < 0 || j_ < 0)
+				continue;
+			if (i_ >= w)
+				continue;
+			if (j_ >= h)
+				continue;
+
+			//LOG("dst[%d][%d]=src[%d][%d]\n", i, j, i_, j_);
+			dst[i+j*w] = src[i_+j_*w];
+		}
+	}
+	return true;
+}
+
 bool Filter::copy(double* dst, double* src, int w_dst, int h_dst, int w_src, int h_src) {	
 	if (dst == NULL) 
 		return false;
