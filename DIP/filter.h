@@ -42,6 +42,7 @@ public:
 	bool cutoff(double*& dst, double* src, int w, int h, int w_remove, int h_remove, int* w_dst, int* h_dst);
 	bool rotate90(uint8_t*& dst, uint8_t* src, int w, int h, int* w_dst, int* h_dst);
 	bool rotate(uint8_t* dst, uint8_t* src, int w, int h, int depth, int theta);
+	bool reflect(uint8_t* dst, uint8_t* src, int w, int h, int depth, int theta);
 	bool copy(double* dst, double* src, int w_dst, int h_dst, int w_src, int h_src);
 	bool copy(double* dst, int width_dst, int rf_dst, int rt_dst, int rs_dst, int cf_dst, int ct_dst, int cs_dst
 			, double* src, int width_src, int rf_src, int rt_src, int rs_src, int cf_src, int ct_src, int cs_src);
