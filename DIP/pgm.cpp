@@ -2372,6 +2372,7 @@ bool read_pgm(std::string file_name, void** out_data, int* out_w, int* out_h, in
 	for (int j=0; j<height; j++) {
 		for (int i=0; i<width; i++) {
 			if (depth ==2) {
+				//PGM is MSB per pixel
 				fis.read((char*)((uint16_t*)raw+i+j*width), depth);
 				s = *((uint16_t*)((uint16_t*)raw+i+j*width));
 				s = (s>>8) | (s<<8);
