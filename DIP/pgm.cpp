@@ -2269,3 +2269,178 @@ bool PGM::idct(double* src, int n_, int m_, int window, int group) {
 
 	return true;
 }
+
+#if 0
+bool read_pgm(std::string file_name, void** out_data, int* out_w, int* out_h, int* out_depth) {
+	std::ifstream fis;
+	int type  = 0;
+	int width = 0;
+	int height = 0;
+	int size = 0;
+	int depth = 0;
+	void* raw = NULL;
+
+	fis.open(file_name.c_str(), std::ios::in | std::ios::binary);
+	if (fis.fail()) {
+		LOG("%s\n", strerror(errno));
+		return false;
+	}
+
+	fis.seekg(0, std::ios::beg);
+	std::string line; 
+	//extract
+	for (int i=0; i<3; i++) {
+		if (getline(fis, line).fail()) {
+			return false;
+		}
+		//LOG("line:%s\n", line.c_str());
+		if (i == 0) {
+			char type_c1;
+			char type_c2;
+			if (sscanf(line.c_str(), "%c%c",&type_c1, &type_c2) <= 0) {
+				LOG("sscanf() failed\n");
+				return false;
+			}
+			if (type_c1 != 'P') {
+				LOG("type_c1 != 'P'\n");
+				return false;
+			}
+			type = type_c2;
+		}
+		else if (i == 1) {
+			char* pc = NULL;
+			pc = strtok((char*)line.c_str(), " ");
+			if (pc == NULL || !(*pc>=0x30 && *pc<=0x39)) {
+				i--;
+				continue;
+			}
+			width = std::stoi(std::string(pc), NULL);
+			pc = strtok(NULL, " ");
+			if (pc == NULL || !(*pc>=0x30 && *pc<=0x39)) {
+				i--;
+				continue;
+			}
+			height = std::stoi(std::string(pc), NULL);
+			size = width*height;
+		}
+		else if (i == 2) {
+			char* pc = NULL;
+			pc = strtok((char*)line.c_str(), " ");
+			if (pc == NULL || !(*pc>=0x30 && *pc<=0x39)) {
+				i--;
+				continue;
+			}
+			int l = std::stoi(std::string(pc), NULL);
+			if (l >= 0xffff) {
+				depth = 2;
+			}
+			else {
+				depth = 1;
+			}
+		}
+	}
+
+#if 1 //print
+	LOG("Extract raw data from %s\n", file_name.c_str());
+	LOG("type  :P%c\n", type);
+	LOG("width :%d\n", width);
+	LOG("height:%d\n", height);
+	LOG("depth :%d\n", depth);
+	LOG("size  :%d\n", size);
+#endif
+
+	//extract data
+	if (*out_data == NULL) {
+		*out_data = (uint8_t*)malloc(width*height*depth);
+		LOG("malloc for *out_data:%p\n", *out_data);
+	}
+	if (out_w) {
+		*out_w = width;
+	}
+	if (out_h) {
+		*out_h = height;
+	}
+	if (out_depth) {
+		*out_depth = depth*8;
+	}
+	
+	raw = (void*) *out_data;
+	memset(raw, 0, width*height*depth);
+
+	uint16_t s = 0;
+	uint8_t  c = 0;
+	for (int j=0; j<height; j++) {
+		for (int i=0; i<width; i++) {
+			if (depth ==2) {
+				fis.read((char*)((uint16_t*)raw+i+j*width), depth);
+				s = *((uint16_t*)((uint16_t*)raw+i+j*width));
+				s = (s>>8) | (s<<8);
+				*((uint16_t*)((uint16_t*)raw+i+j*width)) = s;			
+			}
+			else if (depth == 1) {
+				fis.read((char*)((uint8_t*)raw+i+j*width), depth);
+				c = *((uint8_t*)((uint8_t*)raw+i+j*width));
+			}
+			else {
+				LOG("Not supported depth\n");
+				return false;
+			}
+		}
+	}
+
+	LOG("[Raw image file]:%s\n", file_name.c_str());
+	fis.close();
+
+	return true;
+}
+
+bool save_pgm(char* filename, char* data, int w, int h, int bitsOfPixel) {
+	FILE* pf = NULL;
+	char str[128] = "\0";
+	//int  stamp = time(NULL)%1000;
+	char tmp[16];
+	//sprintf(tmp, "%d_", stamp);
+	sprintf(tmp, "");
+	tmp[strlen(tmp)] = '\0';
+	strncat(str, tmp, strlen(tmp));
+	strncat(str, filename, strlen(filename));
+	strncat(str, ".PGM", strlen("xxxx"));
+	pf = fopen(str, "wb");
+
+	switch (bitsOfPixel) {
+	case (8):
+		fprintf(pf, "P5\n%d %d\n255\n", w, h);
+		break;
+	case (16):
+		fprintf(pf, "P5\n%d %d\n65535\n", w, h);
+		break;
+	default:
+		break;
+	}
+
+	uint16_t s = 0;
+	uint8_t  c = 0;
+	for (int j=0; j<h; j++) {
+		for (int i=0; i<w; i++) {
+			if (bitsOfPixel == 16) {
+				//PGM is MSB per pixel
+				s = *((uint16_t*)((uint16_t*)data+i+j*w));
+				s = (s>>8) | (s<<8);	
+				fwrite(&s, 1, (bitsOfPixel/8), pf);
+			}
+			else if (bitsOfPixel == 8) {
+				c = *((uint8_t*)((uint8_t*)data+i+j*w));
+				fwrite(&c, 1, (bitsOfPixel/8), pf);
+			}
+			else {
+				LOG("Not supported depth\n");
+				return false;
+			}
+		}
+	}
+
+	fclose(pf);
+	printf("[PGM file]:%s\n", str);
+	return true;
+}
+#endif
