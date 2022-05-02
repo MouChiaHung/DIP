@@ -2271,7 +2271,7 @@ bool PGM::idct(double* src, int n_, int m_, int window, int group) {
 }
 
 #if 0
-int diy_opt_pgm_read(char* file_name, void** out_data, int* out_w, int* out_h, int* out_depth) {
+int pgm_read(char* file_name, void** out_data, int* out_w, int* out_h, int* out_depth) {
 	FILE* pf = NULL;
 	int type  = 0;
 	int width = 0;
@@ -2395,7 +2395,7 @@ int diy_opt_pgm_read(char* file_name, void** out_data, int* out_w, int* out_h, i
 
 int pgm_save(char* filename, char* src, int w, int h, int bitsOfPixel) {
 	if (bitsOfPixel != 16 && bitsOfPixel != 8) {
-		LOG("Not supported depth\n");
+		printf("[%s]Not supported depth\n", __func__);
 		return -1;
 	}
 	
