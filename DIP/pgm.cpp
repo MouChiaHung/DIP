@@ -2271,8 +2271,8 @@ bool PGM::idct(double* src, int n_, int m_, int window, int group) {
 }
 
 #if 0
-bool read_pgm(std::string file_name, void** out_data, int* out_w, int* out_h, int* out_depth) {
-	std::ifstream fis;
+int diy_opt_pgm_read(char* file_name, void** out_data, int* out_w, int* out_h, int* out_depth) {
+	FILE* pf = NULL;
 	int type  = 0;
 	int width = 0;
 	int height = 0;
@@ -2280,57 +2280,57 @@ bool read_pgm(std::string file_name, void** out_data, int* out_w, int* out_h, in
 	int depth = 0;
 	void* raw = NULL;
 
-	fis.open(file_name.c_str(), std::ios::in | std::ios::binary);
-	if (fis.fail()) {
-		LOG("%s\n", strerror(errno));
-		return false;
+	pf = fopen(file_name, "rb");
+	if (pf == NULL) {
+		printf("[%s]Failed to fopen:%s\n", __func__, file_name);
+		return -1;
 	}
 
-	fis.seekg(0, std::ios::beg);
-	std::string line; 
-	//extract
+	//extract header
+	fseek(pf, 0, SEEK_SET );
+	char line[32]; 
 	for (int i=0; i<3; i++) {
-		if (getline(fis, line).fail()) {
-			return false;
+		if (fgets(line, 32, pf) == NULL) {
+			return -1;
 		}
-		//LOG("line:%s\n", line.c_str());
+		//printf("[%s]fgets:%s\n", __func__, line);
 		if (i == 0) {
 			char type_c1;
 			char type_c2;
-			if (sscanf(line.c_str(), "%c%c",&type_c1, &type_c2) <= 0) {
-				LOG("sscanf() failed\n");
-				return false;
+			if (sscanf(line, "%c%c",&type_c1, &type_c2) <= 0) {
+				printf("[%s]sscanf() failed\n", __func__);
+				return -1;
 			}
 			if (type_c1 != 'P') {
-				LOG("type_c1 != 'P'\n");
-				return false;
+				printf("[%s]type_c1 != 'P'\n", __func__);
+				return -1;
 			}
 			type = type_c2;
 		}
 		else if (i == 1) {
 			char* pc = NULL;
-			pc = strtok((char*)line.c_str(), " ");
+			pc = strtok((char*)line, " ");
 			if (pc == NULL || !(*pc>=0x30 && *pc<=0x39)) {
 				i--;
 				continue;
 			}
-			width = std::stoi(std::string(pc), NULL);
+			width = strtol(pc, NULL, 10);
 			pc = strtok(NULL, " ");
 			if (pc == NULL || !(*pc>=0x30 && *pc<=0x39)) {
 				i--;
 				continue;
 			}
-			height = std::stoi(std::string(pc), NULL);
+			height = strtol(pc, NULL, 10);
 			size = width*height;
 		}
 		else if (i == 2) {
 			char* pc = NULL;
-			pc = strtok((char*)line.c_str(), " ");
+			pc = strtok((char*)line, " ");
 			if (pc == NULL || !(*pc>=0x30 && *pc<=0x39)) {
 				i--;
 				continue;
 			}
-			int l = std::stoi(std::string(pc), NULL);
+			int l = strtol(pc, NULL, 10);
 			if (l >= 0xffff) {
 				depth = 2;
 			}
@@ -2340,19 +2340,10 @@ bool read_pgm(std::string file_name, void** out_data, int* out_w, int* out_h, in
 		}
 	}
 
-#if 1 //print
-	LOG("Extract raw data from %s\n", file_name.c_str());
-	LOG("type  :P%c\n", type);
-	LOG("width :%d\n", width);
-	LOG("height:%d\n", height);
-	LOG("depth :%d\n", depth);
-	LOG("size  :%d\n", size);
-#endif
-
 	//extract data
 	if (*out_data == NULL) {
 		*out_data = (uint8_t*)malloc(width*height*depth);
-		LOG("malloc for *out_data:%p\n", *out_data);
+		printf("[%s]malloc for *out_data:%p\n", __func__, *out_data);
 	}
 	if (out_w) {
 		*out_w = width;
@@ -2372,27 +2363,34 @@ bool read_pgm(std::string file_name, void** out_data, int* out_w, int* out_h, in
 	for (int j=0; j<height; j++) {
 		for (int i=0; i<width; i++) {
 			if (depth ==2) {
-				//PGM is MSB per pixel
-				fis.read((char*)((uint16_t*)raw+i+j*width), depth);
+				fread((char*)((uint16_t*)raw+i+j*width), depth, 1, pf);
 				s = *((uint16_t*)((uint16_t*)raw+i+j*width));
 				s = (s>>8) | (s<<8);
 				*((uint16_t*)((uint16_t*)raw+i+j*width)) = s;			
 			}
 			else if (depth == 1) {
-				fis.read((char*)((uint8_t*)raw+i+j*width), depth);
+				fread((char*)((uint8_t*)raw+i+j*width), depth, 1, pf);
 				c = *((uint8_t*)((uint8_t*)raw+i+j*width));
 			}
 			else {
-				LOG("Not supported depth\n");
-				return false;
+				printf("[%s]Not supported depth\n", __func__);
+				return -1;
 			}
 		}
 	}
 
-	LOG("[Raw image file]:%s\n", file_name.c_str());
-	fis.close();
-
-	return true;
+#if 1 //print
+	printf("[%s][Raw image file]:%s\n", __func__, file_name);
+	printf("[%s]Extract raw data from %s\n", __func__, file_name);
+	printf("[%s]type  :P%c\n", __func__, type);
+	printf("[%s]width :%d\n", __func__, width);
+	printf("[%s]height:%d\n", __func__, height);
+	printf("[%s]depth :%d\n", __func__, depth);
+	printf("[%s]size  :%d\n", __func__, size);
+	printf("[%s]*******************\n", __func__);
+#endif
+	fclose(pf);
+	return 0;
 }
 
 int pgm_save(char* filename, char* src, int w, int h, int bitsOfPixel) {
