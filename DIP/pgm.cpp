@@ -2395,12 +2395,15 @@ bool read_pgm(std::string file_name, void** out_data, int* out_w, int* out_h, in
 	return true;
 }
 
-bool save_pgm(char* filename, char* data, int w, int h, int bitsOfPixel) {
+int pgm_save(char* filename, char* src, int w, int h, int bitsOfPixel) {
+	if (bitsOfPixel != 16 && bitsOfPixel != 8) {
+		LOG("Not supported depth\n");
+		return -1;
+	}
+	
 	FILE* pf = NULL;
 	char str[128] = "\0";
-	//int  stamp = time(NULL)%1000;
 	char tmp[16];
-	//sprintf(tmp, "%d_", stamp);
 	sprintf(tmp, "");
 	tmp[strlen(tmp)] = '\0';
 	strncat(str, tmp, strlen(tmp));
@@ -2419,6 +2422,34 @@ bool save_pgm(char* filename, char* data, int w, int h, int bitsOfPixel) {
 		break;
 	}
 
+	int size_data = (bitsOfPixel/8)*w*h;
+	char* data = (char*)malloc(size_data);
+	if (data == NULL)
+		return -2;
+	memcpy(data, src, size_data);
+
+	int min=0; 
+	int max=0;
+	short* ps = NULL;
+
+	//Scaling for PGM positive integer format
+	if (bitsOfPixel == 16) {
+		for (int i=0; i<w*h*sizeof(short); i+=sizeof(short)) {
+			ps = ((short*)&data[i]);
+			if (*ps < min)
+				min = *ps;
+			else if (*ps > max)
+				max = *ps;
+		}
+		printf("[%s]max:%d, min:%d\n", __func__, max, min);
+		if (min < 0 && (max <= VALUE_OF_SHORT_MAX && min >= (-1*VALUE_OF_SHORT_MIN))) {
+			for (int i=0; i<w*h*sizeof(short); i+=sizeof(short)) {
+				ps = ((short*)&data[i]);
+				*ps = *ps + VALUE_OF_SHORT_MIN;
+			}	
+		}
+	}
+
 	uint16_t s = 0;
 	uint8_t  c = 0;
 	for (int j=0; j<h; j++) {
@@ -2433,15 +2464,14 @@ bool save_pgm(char* filename, char* data, int w, int h, int bitsOfPixel) {
 				c = *((uint8_t*)((uint8_t*)data+i+j*w));
 				fwrite(&c, 1, (bitsOfPixel/8), pf);
 			}
-			else {
-				LOG("Not supported depth\n");
-				return false;
-			}
 		}
 	}
 
 	fclose(pf);
-	printf("[PGM file]:%s\n", str);
-	return true;
+	printf("[%s]:%s\n", __func__, str);
+	if (data)
+		free(data);
+
+	return 0;
 }
 #endif
