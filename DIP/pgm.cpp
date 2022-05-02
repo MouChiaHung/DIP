@@ -2341,9 +2341,19 @@ int pgm_read(char* file_name, void** out_data, int* out_w, int* out_h, int* out_
 	}
 
 	//extract data
-	if (*out_data == NULL) {
-		*out_data = (uint8_t*)malloc(width*height*depth);
-		printf("[%s]malloc for *out_data:%p\n", __func__, *out_data);
+	if (out_data == NULL) {
+		//forget out_data, make a temorary buffer inside
+		raw = (uint8_t*)malloc(width*height*depth);
+		memset(raw, 0, width*height*depth);
+		printf("[%s]malloc for raw:%p\n", __func__, raw);
+	}
+	else {
+		if (*out_data == NULL) {
+			*out_data = (uint8_t*)malloc(width*height*depth);
+			printf("[%s]malloc for *out_data:%p\n", __func__, *out_data);
+		}
+		raw = (void*) *out_data;
+		memset(raw, 0, width*height*depth);
 	}
 	if (out_w) {
 		*out_w = width;
@@ -2390,6 +2400,11 @@ int pgm_read(char* file_name, void** out_data, int* out_w, int* out_h, int* out_
 	printf("[%s]*******************\n", __func__);
 #endif
 	fclose(pf);
+	if (out_data == NULL) {
+		//free the temorary buffer inside
+		if (raw)
+			free(raw);
+	}
 	return 0;
 }
 
